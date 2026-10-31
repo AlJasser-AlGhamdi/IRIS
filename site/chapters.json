@@ -3,9 +3,9 @@
   {"key": "ownership", "at": 5, "en": "Ownership", "ar": "الملكية"},
   {"key": "scan", "at": 10, "en": "Scan", "ar": "الفحص"},
   {"key": "interview", "at": 30, "en": "Interview", "ar": "المقابلة"},
-  {"key": "contradiction", "at": 156, "en": "Contradiction", "ar": "التناقض"},
-  {"key": "fix", "at": 166, "en": "Fix and verify", "ar": "المعالجة والتحقق"},
+  {"key": "contradiction", "at": 163, "en": "Contradiction", "ar": "التناقض"},
+  {"key": "fix", "at": 181, "en": "Fix and verify", "ar": "المعالجة والتحقق"},
   {"key": "documents", "at": 202, "en": "Documents and plan", "ar": "المستندات والخطة"},
-  {"key": "monitor", "at": 218, "en": "Monitoring", "ar": "المراقبة"},
+  {"key": "monitor", "at": 257, "en": "Monitoring", "ar": "المراقبة"},
   {"key": "results", "at": 269, "en": "Results", "ar": "النتائج"}
 ]

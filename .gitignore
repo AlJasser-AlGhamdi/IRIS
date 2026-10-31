@@ -19,6 +19,7 @@ dist/
 evals/logs/
 slides/img/page*.png
 slides/img/preview-*.png
+slides/build/
 evals/labels/*.tmp
 evals/labels/*.xlsx
 .worktrees/

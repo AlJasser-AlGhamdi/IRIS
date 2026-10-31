@@ -10,7 +10,7 @@ on it (git tag `splits-frozen-v2`, [ITERATIONS](ITERATIONS.md) #6).
 |---|---|---|---|
 | Synthetic firms | The engine's generator of Saudi Class B firms: what their scan observes, their hidden truth, their Tier-2 records | dev seeds 1–5; held-out 4001–4020; robustness 2001–2005; ablations 3001–3010 | E1, E5, ablations |
 | Owner personas | honest; overstating (claims a missing practice with p = 0.5, the engine's adversary); vague (unclear first, clear on follow-up). Replies in formal Arabic, Saudi dialect and English | 3 per firm | E1, E5 |
-| Lab estates | The fictional company on real infrastructure (Jeddah), with defect mixes from seeds | dev: demo, seed-1, seed-2; held-out: seed-9101–9106 | E6, the demo |
+| Lab estates | The fictional company on controlled lab systems, with defect mixes from seeds | dev: demo, seed-1, seed-2; held-out: seed-9101–9106 | E6, the demo |
 | Owner answers | Short replies to the 16 questions, labelled yes / no / partly / unknown by a native speaker | dev 40; test 40; own answers 20 | G0, E2 |
 | Injection payloads | 6 phrasings (Arabic and English) × 5 places a target controls | 30 | E4 |
 
@@ -42,10 +42,9 @@ assumption of the simulator. There are three personas:
 The simulator renders replies from templates in formal Arabic, Saudi dialect and English, so the model has to
 understand them as it would a real chat.
 
-Lab estates (`lab/estates.py`) are real services on a private network: DNS records, a web server with a TLS
-certificate, and decoy database, printer, FTP and SSH listeners. The scanner reads real protocol behaviour
-there instead of modelled detections. The demo estate plants six defects; held-out estates are seeded mixes of
-ten plantable defects.
+Lab estates (`lab/estates.py`) are controlled services with DNS records, TLS and exposed-service test cases.
+The scanner reads real protocol behaviour there instead of modelled detections. The demo estate plants six
+defects; held-out estates are seeded mixes of ten plantable defects.
 
 The answer sets for language understanding do not come from the simulator. The development and test replies
 were written for this evaluation. The project owner wrote the 20 own answers in ten styles the simulator's

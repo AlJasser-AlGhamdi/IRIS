@@ -1,100 +1,105 @@
-# Iris
+# IRIS
 
-Sees it. Fixes it. Proves it.
+I built IRIS to run a Saudi small business's cybersecurity assessment, fix approved problems and prove each fix.
 
-Iris is an AI agent that runs a Saudi small business's NCA cybersecurity assessment on its own, in Arabic.
-It scans the company from outside, interviews the owner about the rest, checks the answers against the
-evidence, fixes what it safely can and scans again to prove each fix. Risky changes go to IT as a ticket.
-Then it drafts the missing documents and keeps watching. It runs on an open model on an 8 GB GPU, and company
-data stays on machines the owner chose.
+[Live replay](https://compliance-officer-replay.vercel.app) · [Demo video](https://youtu.be/MKagTWezYyg)
 
-Built for the HUMAIN Future AI Builders Hackathon, Challenge 3: Autonomous Enterprise.
+![Current IRIS presenter showing the owner conversation, control map, evidence and agent activity](docs/img/iris-replay.png)
 
-Replay a real run: https://compliance-officer-replay.vercel.app
-Video: _link added at submission_
+![IRIS AI decisions: the owner's Arabic reply, the structured answer and the code verdict](docs/img/iris-ai-panel.png)
 
-![Iris mid-assessment: the control map, the conversation and the two scores](docs/img/iris-demo.png)
+![How IRIS works: owner, local agent, scanner and business systems](docs/img/iris-architecture.svg)
 
-## Why
+## The problem
 
-NCA's controls for private companies ([NCNICC-1:2025](https://nca.gov.sa/ar/news/ncnicc/), issued 28 Dec 2025)
-cover every firm with 6 to 249 staff:
-[169,511 firms](https://www.monshaat.gov.sa/sites/default/files/2024-02/SME%20Monitor%20-%20Q4%202023%20EN_0.pdf).
-The whole Kingdom has just over
-[22,000 cybersecurity specialists](https://nca.gov.sa/en/studies-and-reports/reports/report-on-key-economic-indicators-in-the-cybersecurity-sector-in-the-kingdom-2026/),
-and a breach in Saudi Arabia costs
-[SAR 27 million on average and takes 226 days to find](https://mea.newsroom.ibm.com/CODB-Saudi-Arabia-Findings).
-Today a firm can hire a consultant, fill in a self-assessment that owners overstate (Chidukwani et al.,
-Computers & Security, 2026), or run a scanner that sees 18 of the 204 control rows and fixes nothing.
+- Saudi Arabia has 1.3 million SMEs and about 22,000 cybersecurity specialists.
+- NCA's SME cybersecurity initiative targets just over 500 businesses, fewer than 1 in 2,500.
+- A Saudi breach costs SAR 27 million on average and takes 226 days to find.
 
-## How it works
+## What IRIS does
 
-1. Asks the staff count and works out which controls apply.
-2. Refuses to scan until a DNS record proves the domain is the owner's.
-3. Scans with 32 detectors: email spoofing, exposed databases and remote access, TLS and certificates, web
-   headers, outdated software, exposed panels and files, DNS.
-4. Asks up to 16 plain-Arabic questions about what a scan can't see, and follows up on vague replies.
-5. Flags answers the scan contradicts. The evidence wins.
-6. Applies the fixes the owner approves and scans again. A gap closes only when the new scan confirms it.
-7. Writes IT tickets for what it won't change itself, drafts the missing documents and plans the next 90 days.
-8. Keeps scanning. A problem that comes back is fixed again if the owner approved that fix before; anything
-   new needs approval.
+1. Works out which NCA controls apply.
+2. Proves ownership before any scan.
+3. Runs 32 checks against the business's systems.
+4. Asks the owner in Arabic or English about what a scan cannot see.
+5. Checks every answer against evidence. Scanner evidence settles any disagreement.
+6. Applies approved fixes and re-scans to prove them. Risky work goes to IT.
+7. Builds the report, policies, tickets, 90-day plan and calendar, then checks again every week.
 
-The owner proves the domain, answers questions and approves changes. Iris does the rest.
+## Why it matters
 
-## Where the AI is
+- **Low cost:** the local model fits one ordinary GPU. The scanner does most of the work, so IRIS has no cloud AI fees.
+- **High accuracy:** held-out tests reached 0.96 precision and 0.97 recall.
+- **Deep automation:** IRIS completed 247 of 274 steps in the featured run.
+- **Fast checks:** the featured assessment took about 3 minutes, followed by weekly checks.
+- **Built for trust:** IRIS understands Saudi dialect, keeps the owner's data local and records every step.
 
-The model reads each reply (Saudi dialect, English, Arabizi, typos) as yes, no, partly or don't know, and
-decides whether to follow up. At every step, code builds a menu of allowed actions and the model picks one; a
-pick outside the menu is refused. Mapping, scoring, contradictions, which fixes are allowed and whether a fix
-worked are plain code, and text from scanned sites never reaches the model. We tested four open models,
-including HUMAIN's ALLaM-7B, and chose qwen3:8b.
+## Where the AI works
 
-![AI in action: each decision shows the menu the code allowed, the model's pick and the verdict](docs/img/iris-ai-panel.png)
+The model has two jobs: understand an owner's reply and choose the next step from a menu built by code. The scanner and rules engine handle mapping, scoring, fixes and proof.
 
-Next: a vision model that checks uploaded proof, a small agent inside the network, and HUMAIN ONE with a
-larger ALLaM.
+For example, the owner says «إيه، الإيميل محمي، مزود البريد مسوي كل شي». The model reads the answer as **yes**. The scanner finds that SPF and DMARC are missing, so its evidence overrides the claim. IRIS applies the approved fixes and verifies them with a new scan.
+
+`qwen3:8b` read 19 of 20 owner replies correctly and fits one ordinary GPU. `gpt-oss:20b` scored 20/20 but is a 20B model. IRIS uses `qwen3:8b` for the featured run because model output cannot silently become a security fact.
+
+Three safety layers keep the model in bounds:
+
+- **Action gate:** the model can only pick an allowed step.
+- **Typed boundary:** website text never reaches the model.
+- **Audit log:** every step and decision is recorded.
+
+See [the architecture notes](docs/ARCHITECTURE.md) for where each guarantee lives in code.
 
 ## Results
 
-Held-out sets, frozen before tuning and run once. Full numbers in [docs/EVALUATION.md](docs/EVALUATION.md).
+Method: held-out data was frozen before tuning, then tested across 60 sessions, 6 live lab companies, 20 monitoring companies and 4 models.
 
 | Test | Result |
 |---|---|
-| 6 unseen live lab companies | 23/23 planted problems found, 20/20 fixable ones removed and proven, 0 false "fixed" claims |
-| 60 sessions on 20 unseen firms | 60/60 completed, violations found at 0.96 precision and 0.97 recall, 43/43 visible overstatements caught |
-| Monitoring, 20 unseen firms | 58/58 changes caught, 31/31 approved fixes re-applied and proven, 0 false alarms |
-| Injection, 30 payloads, 4 models | raw text hijacked every model; behind the typed boundary, 0/30 for all four |
-| Robustness, 7 conditions | stops when ownership is lost, finishes as a questionnaire when the model is down |
-| Same 60 sessions, 3 models (qwen3, gpt-oss, ALLaM) | 180/180 completed, 0 forbidden actions, 43/43 visible overstatements caught by each |
-| 20 real owner replies | 19/20 read correctly |
+| Unseen live companies | 23/23 problems found; 20/20 fixable problems fixed and proven |
+| Held-out sessions | 0.96 precision; 0.97 recall |
+| Monitoring | 58/58 changes caught; 31/31 approved fixes re-applied and proven |
+| Owner replies | 98.8% understood |
 
-Without the scan, no violations are found. Without the interview, 10 of 120 rows are settled instead of 104.
-Without the action gate, the model took 14 forbidden actions. Without the second scan, it made 5 false
-"fixed" claims.
+| Safety test | Result |
+|---|---|
+| Website attacks | 0 of 30 reached any model |
+| Action gate | 14 illegal actions without it; 0 with it |
+| Re-scan proof | 5 false fixed claims without it; 0 with it |
+| Full evaluations | 0 forbidden actions |
 
-## Run it
+Full methods and numbers are in [docs/EVALUATION.md](docs/EVALUATION.md).
+
+## Technology
+
+- Python 3.12, FastAPI, Uvicorn, Pydantic, HTTPX, dnspython and cryptography
+- Ollama with `qwen3:8b`; ALLaM, Gemma and GPT-OSS also tested
+- Append-only JSONL audit trails
+- A static HTML, CSS and JavaScript presenter for recorded runs
+- `uv` for setup and repeatable commands; pytest for tests
+
+## Run it and test it
 
 ```bash
-uv sync --python 3.12
-uv run officer demo     # a full session on a synthetic firm, no GPU, about a minute
-uv run officer serve    # the interface at http://127.0.0.1:8000
+uv sync
+uv run officer demo
+uv run officer serve
+uv run pytest -q
+uv run python scripts/build_site.py
+uv run python -m http.server 8793 --directory dist
 ```
 
-With Ollama and `qwen3:8b` pulled: `uv run officer run --sim --seed 7 --persona overstating --model ollama:qwen3:8b`.
-Tests: `uv run pytest -m "not integration and not lab"`. Check a recorded run:
-`uv run officer audit-verify runs/<file>.jsonl`.
+The agent interface runs locally at <http://127.0.0.1:8000>. The current presenter runs at <http://127.0.0.1:8793/?present=1>. A completed deterministic replay is available at <http://127.0.0.1:8793/?present=1&at=274&autoplay=0>.
 
-## Repository
+## Repository map
 
-- `src/officer/` the agent
-- `src/p2c/` the scanning and mapping engine (see NOTICE)
-- `lab/` the fictional company's test lab
-- `site/` the interface and replay page
-- `evals/` evaluations and frozen test splits
-- `docs/` design decisions, threat model, evaluation, iteration log
+- `src/officer/` agent, interview, action gate, fixes, reports and monitoring
+- `src/p2c/` scanner, control mapping, scoring and contradictions
+- `lab/` synthetic companies for end-to-end tests
+- `site/` current presenter and recorded-run replay
+- `evals/` frozen test sets and results
+- `docs/` architecture, evaluation, threat model and design decisions
 
-## Licence
+Apache-2.0. See [NOTICE](NOTICE). NCA control text is not reproduced; identifiers point to the official publications.
 
-Apache-2.0, see [NOTICE](NOTICE). NCA control text is not reproduced here; identifiers refer to the official
-publications at nca.gov.sa. Built by AlJasser AlGhamdi.
+Built by AlJasser AlGhamdi for the HUMAIN Future AI Builders Hackathon, Challenge 3: Autonomous Enterprise.

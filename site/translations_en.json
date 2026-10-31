@@ -1,0 +1,43 @@
+{
+ "note": "English renderings of the owner's Arabic replies and Arabic-only output titles in runs/featured/demo-qwen3.jsonl. The run log itself is unchanged.",
+ "owner_replies": {
+  "3": "We have about 40 employees",
+  "8": "Done, I added the records",
+  "34": "No, we haven't done a vulnerability scan",
+  "40": "The website has an https certificate",
+  "46": "Yes, the email is protected, the mail provider handles everything",
+  "52": "The devices update automatically and have antivirus, and I can send you the dashboard report",
+  "58": "Of course, the database is internal and nobody can reach it from outside",
+  "64": "Everyone has their own account, and two-factor is on email only",
+  "70": "We have one printer in the office, I don't know if it's visible on the internet",
+  "76": "We don't have a written plan",
+  "82": "Partly, email only",
+  "90": "The server room is locked and the manager has the key",
+  "96": "I don't know exactly",
+  "104": "We back up to the cloud every week and tested a restore last month",
+  "110": "The logs are there but nobody reviews them",
+  "116": "No, there's no plan",
+  "122": "We have a spreadsheet of the devices but it hasn't been updated in a while",
+  "128": "Partly",
+  "136": "Partly",
+  "144": "No, there's no written policy",
+  "150": "The laptops are encrypted, and the phones have a lock code"
+ },
+ "tickets": {
+  "exposed_management_port": "Remote access exposed to the internet",
+  "dkim_missing": "DKIM signing not enabled",
+  "dnssec_missing": "DNSSEC not enabled",
+  "headers": "Website security headers",
+  "mta_sts_missing": "MTA-STS not enabled",
+  "no_ddos_protection": "No DDoS protection",
+  "waf_absent": "No web application firewall"
+ },
+ "calendar": [
+  {"start": "2026-11-06", "repeat": "Weekly", "title": "Security monitoring round", "detail": "The agent re-scans and fixes anything that came back."},
+  {"start": "2027-01-28", "repeat": "Every 3 months", "title": "Backup restore test", "detail": "Restore a file and a database and record the result."},
+  {"start": "2027-04-28", "repeat": "Every 6 months", "title": "Accounts and permissions review", "detail": "Remove what is no longer used and confirm two-factor sign-in."},
+  {"start": "2026-11-29", "repeat": "Every 3 months", "title": "Phishing reminder for staff", "detail": "Send the awareness message to staff."},
+  {"start": "2027-10-30", "repeat": "Yearly", "title": "Cybersecurity policy review", "detail": "Review the policy and approve any changes."},
+  {"start": "2027-08-26", "repeat": "Yearly", "title": "Ransomware tabletop exercise", "detail": "Run the incident response plan on a scenario."}
+ ]
+}

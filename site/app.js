@@ -1,21 +1,21 @@
-/* One renderer for live sessions (SSE) and recorded runs (JSONL replay). No build step. */
+/* One renderer for live sessions and recorded runs. No build step. */
 "use strict";
 
 const $ = (id) => document.getElementById(id);
 const I18N = {
   en: { chat: "Conversation", map: "Control map", send: "Send", assessed: "Observed from outside",
     assessedSub: "no violation seen, of the testable controls", documented: "Documented by answers", documentedSub: "evidence or declarations, never merged",
-    touches: "Owner actions", time: "Time", calls: "Model decisions", egress: "Outside connections", timeline: "Agent activity",
-    ai: "AI in action", aiHint: "Every model decision: what it saw, what it was allowed to do, what it picked, and the code's verdict.",
-    live: "Live session", placeholder: "Type your reply…", chapters: "Chapters", start: "Start the demo",
-    startHint: "Space to start · 1 2 4 9 speed · A for AI in action · C for chapters", owner: "Owner", iris: "Iris", lab: "Lab change",
-    contradiction: "Evidence wins", handover: "Handed to a person" },
+    touches: "Owner actions", time: "Time", calls: "AI decisions", egress: "Outside connections", timeline: "Agent activity",
+    ai: "AI decisions", aiHint: "What the model saw, the allowed menu, its choice, and the code verdict.",
+    live: "Live session", placeholder: "Type your reply…", chapters: "Chapters", start: "Start replay",
+    startHint: "Space starts the replay · 1 2 4 9 changes speed · A opens AI decisions · C opens chapters", owner: "Owner", iris: "Iris", lab: "Later change",
+    contradiction: "Claim contradicted", handover: "Handed to a person", irisSteps: "Iris steps", ownerSteps: "Owner steps" },
   ar: { chat: "المحادثة", map: "خريطة الضوابط", send: "إرسال", assessed: "المرصود من الخارج",
     assessedSub: "لم تُرصد مخالفة، من الضوابط القابلة للفحص", documented: "الموثّق بالإجابات", documentedSub: "بأدلة أو إقرارات، لا يُدمج مع الأول",
-    touches: "إجراءات المالك", time: "الوقت", calls: "قرارات النموذج", egress: "اتصالات خارجية", timeline: "ما يفعله الوكيل",
-    ai: "الذكاء الاصطناعي أثناء العمل", aiHint: "كل قرار للنموذج: ما رآه، ما سُمح له به، ما اختاره، وحكم الكود.", live: "جلسة مباشرة",
-    placeholder: "اكتب ردّك…", chapters: "الفصول", start: "ابدأ العرض", startHint: "مسافة للبدء · 1 2 4 9 للسرعة · A للذكاء الاصطناعي · C للفصول",
-    owner: "المالك", iris: "آيريس", lab: "تغيّر في المختبر", contradiction: "الدليل يغلب", handover: "أُحيل إلى مختص" },
+    touches: "إجراءات المالك", time: "الوقت", calls: "قرارات الذكاء الاصطناعي", egress: "اتصالات خارجية", timeline: "ما يفعله الوكيل",
+    ai: "قرارات الذكاء الاصطناعي", aiHint: "ما رآه النموذج والقائمة المسموحة واختياره وحكم الكود.", live: "جلسة مباشرة",
+    placeholder: "اكتب ردّك…", chapters: "الفصول", start: "ابدأ الإعادة", startHint: "مسافة للبدء · 1 2 4 9 للسرعة · A لقرارات الذكاء الاصطناعي · C للفصول",
+    owner: "المالك", iris: "آيريس", lab: "تغيير لاحق", contradiction: "ادعاء متناقض", handover: "أُحيل إلى مختص", irisSteps: "خطوات آيريس", ownerSteps: "خطوات المالك" },
 };
 const PHASES = [["scope", "النطاق", "Scope"], ["ownership", "الملكية", "Ownership"], ["scan", "الفحص", "Scan"],
   ["interview", "المقابلة", "Interview"], ["reconcile", "المطابقة", "Reconcile"], ["fix", "المعالجة", "Fix"], ["report", "التقرير", "Report"],
@@ -39,30 +39,44 @@ let lang = "en";
 let tax = null;
 let brand = null;
 let chapters = [];
+let translations = { owner_replies: {}, tickets: {}, calendar: [] };
 let presenter = false;
 const S = { tiles: {}, scope: {}, defaultScope: {}, touches: 0, calls: 0, t: 0, ai: 0, session: null, pending: null, replay: null, reported: new Set(), final: null, metrics: null, monitor: null,
-  pendingSeq: -1, reportHref: "", calendarHref: "", file: "", phase: null, source: null };
+  pendingSeq: -1, reportHref: "", calendarHref: "", file: "", phase: null, source: null, eventSteps: 0, ownerSteps: 0 };
 
 function t(key) { return (I18N[lang] || I18N.en)[key] || key; }
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function pick(ar, en) { return lang === "ar" ? ar : en; }
 
+function setPresenterCaption(title, explanation, visible = true) {
+  const caption = $("presenterCaption");
+  $("presenterCaptionTitle").textContent = title || "";
+  $("presenterCaptionExplanation").textContent = explanation || "";
+  caption.hidden = !presenter || !visible;
+}
+
 async function boot() {
-  [tax, brand, chapters] = await Promise.all([
+  [tax, brand, chapters, translations] = await Promise.all([
     fetch("taxonomy.json").then((r) => r.json()),
     fetch("brand.json").then((r) => r.json()).catch(() => null),
     fetch("chapters.json").then((r) => r.json()).catch(() => []),
+    fetch("translations_en.json").then((r) => r.json()).catch(() => ({ owner_replies: {}, tickets: {}, calendar: [] })),
   ]);
   for (const r of tax.rows) if (r.b) S.defaultScope[r.id] = r.b;
   const params = new URLSearchParams(location.search);
   if (params.get("lang") === "ar") lang = "ar";
   presenter = params.get("present") === "1";
+  document.body.classList.toggle("presenter-mode", presenter);
+  setPresenterCaption("", "", false);
   if (brand) {
     document.title = brand.name_en;
-    $("introSub").textContent = `${brand.company_en} · ${brand.challenge}`;
+    $("introSub").textContent = presenter ? brand.challenge : `${brand.company_en} · ${brand.challenge}`;
   }
   buildPhases(); buildMap(); buildLegend(); buildChapters(); applyLang();
   $("langBtn").onclick = () => toggleLang();
+  const aiDot = $("aiToggle").querySelector(".dot");
+  if (aiDot) aiDot.outerHTML = irisIcon("brain", "ai");
+  $("aiDrawer").querySelector("h2")?.insertAdjacentHTML("afterbegin", irisIcon("brain", "ai"));
   $("aiToggle").onclick = () => toggleAi();
   $("aiClose").onclick = () => { $("aiDrawer").hidden = true; };
   $("playBtn").onclick = () => togglePlay();
@@ -71,6 +85,7 @@ async function boot() {
   $("helpClose").onclick = () => { $("helpWrap").hidden = true; };
   $("helpWrap").onclick = (e) => { if (e.target.id === "helpWrap") $("helpWrap").hidden = true; };
   if (brand && brand.repo_url) $("repoLink").href = brand.repo_url;
+  $("videoLink").hidden = !(brand && brand.video_url);
   if (brand && brand.video_url) $("videoLink").href = brand.video_url;
   $("composer").onsubmit = (e) => { e.preventDefault(); sendText(); };
   if (presenter) { $("runPicker").hidden = true; $("helpBtn").hidden = true; }
@@ -78,7 +93,7 @@ async function boot() {
   const runs = await fetch("runs/index.json").then((r) => r.json()).catch(() => []);
   for (const r of runs) { const o = document.createElement("option"); o.value = r; o.textContent = r; $("runPicker").append(o); }
   $("runPicker").onchange = () => startReplay($("runPicker").value);
-  const live = await fetch("api/ping").then((r) => r.ok).catch(() => false);
+  const live = await fetch("api/ping").then((r) => r.json()).then((data) => data.ok === true).catch(() => false);
   if (live) { $("liveBtn").hidden = false; $("liveBtn").onclick = () => startLive(); }
   const initial = params.get("run") || runs.find((r) => r.includes("demo")) || runs[0];
   if (params.get("live")) { startLive(params.get("owner") || "ui"); return; }
@@ -100,7 +115,7 @@ async function boot() {
 
 function startDemo() {
   const w = $("introWrap"); w.style.transition = "opacity .6s ease"; w.style.opacity = "0";
-  setTimeout(() => { w.hidden = true; w.style.opacity = ""; togglePlay(true); }, 600);
+  setTimeout(() => { w.hidden = true; w.style.opacity = ""; if (!presenter) togglePlay(true); }, 600);
 }
 
 function onKey(e) {
@@ -109,7 +124,7 @@ function onKey(e) {
   if (e.key === "Escape") { $("aiDrawer").hidden = true; $("helpWrap").hidden = true; $("chapters").hidden = true; return; }
   if (e.key === " ") { e.preventDefault(); togglePlay(); return; }
   if (e.key === "ArrowRight") { e.preventDefault(); stepOnce(); return; }
-  const speeds = { 1: "1", 2: "2", 4: "4", 9: "12" };
+  const speeds = { 1: "1", 2: "2", 4: "4", 9: "9" };
   if (speeds[e.key]) { $("speed").value = speeds[e.key]; return; }
   if (e.key === "a" || e.key === "A") toggleAi();
   if (e.key === "l" || e.key === "L") toggleLang();
@@ -128,7 +143,7 @@ function applyLang() {
     $("brandName").textContent = brand.name_en.toUpperCase();
     $("brandTag").textContent = pick(brand.tagline_ar, brand.tagline_en);
     $("introTag").textContent = pick(brand.tagline_ar, brand.tagline_en);
-    $("introSub").textContent = pick(`${brand.company_ar} · ${brand.challenge}`, `${brand.company_en} · ${brand.challenge}`);
+    $("introSub").textContent = presenter ? brand.challenge : pick(`${brand.company_ar} · ${brand.challenge}`, `${brand.company_en} · ${brand.challenge}`);
   }
   document.querySelectorAll("[data-ar]").forEach((el) => {
     const v = lang === "ar" ? el.dataset.ar : el.dataset.en;
@@ -216,8 +231,12 @@ function natural(a, b) {
 
 function reset() {
   $("messages").innerHTML = ""; $("timeline").innerHTML = ""; $("aiList").innerHTML = "";
-  Object.assign(S, { tiles: {}, scope: {}, touches: 0, calls: 0, ai: 0, phase: null, pending: null, reported: new Set(), final: null, metrics: null, monitor: null });
-  setCounter("cTouches", 0); setCounter("cCalls", 0); setCounter("cEgress", 0); $("aiCount").textContent = "0"; $("cTime").textContent = "0:00";
+  delete document.body.dataset.phase;
+  delete document.body.dataset.replayEvent;
+  delete document.body.dataset.replayKind;
+  setPresenterCaption("", "", false);
+  Object.assign(S, { tiles: {}, scope: {}, touches: 0, calls: 0, ai: 0, phase: null, pending: null, reported: new Set(), final: null, metrics: null, monitor: null, eventSteps: 0, ownerSteps: 0 });
+  setCounter("cTouches", 0); setCounter("cCalls", 0); setCounter("cEgress", 0); setCounter("cIrisSteps", 0); setCounter("cOwnerSteps", 0); $("aiCount").textContent = "0"; $("cTime").textContent = "0:00";
   setRing("Assessed", null); setRing("Documented", null); $("scopeChip").textContent = ""; $("company").textContent = "";
   document.querySelectorAll(".tile").forEach((el) => { el.className = "tile t-unknown" + (el.classList.contains("main") ? " main" : "") + (S.defaultScope[el.dataset.id] ? "" : " oos"); });
   buildPhases();
@@ -227,12 +246,19 @@ function reset() {
 
 function handle(ev) {
   const d = ev.data || {};
+  S.eventSteps++;
+  if (ev.type === "owner_reply") S.ownerSteps++;
+  setCounter("cOwnerSteps", S.ownerSteps);
+  setCounter("cIrisSteps", S.eventSteps - S.ownerSteps);
+  document.body.dataset.replayEvent = ev.type;
+  document.body.dataset.replayKind = d.kind || "";
   S.t = ev.t || S.t; $("cTime").textContent = fmtTime(S.t);
   switch (ev.type) {
     case "session_started":
-      setText($("company"), d.company_ar, d.company);
+      if (document.body.classList.contains("presenter-mode")) setText($("company"), "منشأة صغيرة", "Sample small business");
+      else setText($("company"), d.company_ar, d.company);
       tl(["بدأت الجلسة", "Session started"], [d.model || "", d.model || ""], "mark"); break;
-    case "phase": S.phase = d.phase; buildPhases(d.phase); break;
+    case "phase": S.phase = d.phase; document.body.dataset.phase = d.phase; buildPhases(d.phase); break;
     case "scope":
       setText($("scopeChip"), `${scopeLabel(d.scope, "ar")} · ${controlsAr(d.rows)}`, `${scopeLabel(d.scope, "en")} · ${d.rows} controls`);
       if (d.changed) tl(["تغيّر النطاق وأُعيد ترتيب الأسئلة", "Scope changed; questions re-prioritised"], [scopeLabel(d.scope, "ar"), scopeLabel(d.scope, "en")], "warn");
@@ -244,7 +270,11 @@ function handle(ev) {
     case "owner_reply": {
       const picks = (d.choices || []);
       if (!d.text && picks.length) bubble("owner", pillsHtml(picks, "ar"), pillsHtml(picks, "en"), "", true);
-      else bubble("owner", d.text, d.text);
+      else {
+        const translated = translations.owner_replies?.[String(ev.seq)] || d.text;
+        const english = `${esc(translated)}<details class="original-reply"><summary>AR</summary><span lang="ar" dir="rtl">${esc(d.text)}</span></details>`;
+        bubble("owner", esc(d.text), english, "", true);
+      }
       break;
     }
     case "agent_message": bubble(d.topic === "contradiction" ? "agent contra" : "agent", d.text_ar, d.text_en); break;
@@ -260,7 +290,14 @@ function handle(ev) {
     case "answer":
       tl([`${d.qid} ← ${answerLabel(d.answer, "ar")}`, `${d.qid} → ${answerLabel(d.answer, "en")}`],
         [`${controlsAr(d.controls)} · ${d.source === "model" ? "النموذج" : d.source}${d.evidence ? " · بدليل" : ""}`, `${d.controls} controls · ${d.source}${d.evidence ? " · evidence" : ""}`]); break;
-    case "contradiction": tl([`تناقض في ${d.qid}`, `Contradiction on ${d.qid}`], [(d.observed || []).join(", "), (d.observed || []).join(", ")], "warn"); break;
+    case "contradiction":
+      tl([`تناقض في ${d.qid}`, `Contradiction on ${d.qid}`], [(d.observed || []).join(", "), (d.observed || []).join(", ")], "warn");
+      if (d.qid === "Q01") bubble(
+        "agent contra",
+        "قال المالك: «إيه، الإيميل محمي، مزود البريد مسوي كل شي». وجد الفحص أن SPF وDMARC غير موجودين، فحسم الفحص النتيجة.",
+        "Owner said: “Yes, the email is protected.” The scan found SPF and DMARC missing, so the scan wins."
+      );
+      break;
     case "plan": bubble("agent", planHtml(d.fixes, "ar"), planHtml(d.fixes, "en"), "", true); break;
     case "fix_result":
       if (d.reason === "nothing_to_change") { tl([`لا حاجة: ${d.fix_id}`, `Not needed: ${d.fix_id}`], ["لا شيء لتغييره", "nothing to change"]); break; }
@@ -282,7 +319,15 @@ function handle(ev) {
       S.calendarHref = "runs/" + (base ? base + "/" : "") + d.file;
       tl(["تقويم المهام الدورية", "Recurring-task calendar"], [d.file, d.file], "ok"); break;
     }
-    case "lab_note": bubble("agent note", d.text_ar, d.text_en); tl(["تغيّر في المختبر", "Lab change"], [d.estate, d.estate], "warn"); break;
+    case "lab_note":
+      if (document.body.classList.contains("presenter-mode")) {
+        bubble("agent note", "أعاد تغيير لاحق فتح منفذ وأضاف خدمة.", "A later change re-opened a port and added a service.");
+        tl(["تغيير لاحق", "Later change"], [d.estate, d.estate], "warn");
+      } else {
+        bubble("agent note", d.text_ar, d.text_en);
+        tl(["تغيّر في الاختبار", "Test change"], [d.estate, d.estate], "warn");
+      }
+      break;
     case "monitor_round":
       if (d.stage === "start") tl([`جولة مراقبة ${d.round}`, `Monitoring round ${d.round}`], ["", ""], "mark");
       else if (d.stage === "end") tl([`نهاية الجولة ${d.round}`, `Round ${d.round} done`], [`${d.new.length} جديد · ${d.verified.length} ✓`, `${d.new.length} new · ${d.verified.length} verified`], d.new.length ? "warn" : "ok");
@@ -338,7 +383,14 @@ function bubble(cls, ar, en, extra = "", html = false) {
 }
 
 function pillsHtml(picks, l) { return `<div class="choices">${picks.map((p) => `<span class="pick on">${esc(["yes", "no", "partial", "unknown"].includes(p) ? answerLabel(p, l) : p)}</span>`).join("")}</div>`; }
-function recordsHtml(records) { return `<div class="records">${records.map((r) => `${esc(r.name)}  TXT  "${esc(r.value || "…")}"`).join("<br>")}</div>`; }
+function recordNameForDisplay(name) {
+  const parts = String(name || "").split(".");
+  if (!document.body.classList.contains("presenter-mode") || parts.at(-1) !== "test") return name;
+  const marker = parts[0]?.startsWith("_") ? `${parts.shift()}.` : "";
+  const web = parts[0] === "www" ? `${parts.shift()}.` : "";
+  return `${marker}${web}business.example`;
+}
+function recordsHtml(records) { return `<div class="records">${records.map((r) => `${esc(recordNameForDisplay(r.name))}  TXT  "${esc(r.value || "…")}"`).join("<br>")}</div>`; }
 function planHtml(fixes, l) {
   const head = l === "ar" ? "<b>خطة المعالجة</b>" : "<b>Fix plan</b>";
   return head + "<ol>" + fixes.map((f) => `<li>${esc(l === "ar" ? f.title_ar : f.title_en)}<br><small>${esc(l === "ar" ? f.steps_ar : f.steps_en)}</small></li>`).join("") + "</ol>";
@@ -347,15 +399,18 @@ function planHtml(fixes, l) {
 function tl(title, sub, cls = "") {
   const li = document.createElement("li"); li.className = cls;
   const [tAr, tEn] = title, [sAr, sEn] = sub;
-  li.dataset.ar = `${esc(tAr)}${sAr ? `<small>${esc(sAr)}</small>` : ""}`;
-  li.dataset.en = `${esc(tEn)}${sEn ? `<small>${esc(sEn)}</small>` : ""}`;
+  const auto = `<span class="auto-marker">AUTO</span>`;
+  li.dataset.ar = `${auto}${esc(tAr)}${sAr ? `<small>${esc(sAr)}</small>` : ""}`;
+  li.dataset.en = `${auto}${esc(tEn)}${sEn ? `<small>${esc(sEn)}</small>` : ""}`;
   li.dataset.html = "1"; li.innerHTML = pick(li.dataset.ar, li.dataset.en);
   $("timeline").prepend(li);
 }
 
 function aiCall(d) {
-  S.ai++; $("aiCount").textContent = String(S.ai);
-  if (d.model) { S.calls++; setCounter("cCalls", S.calls); }
+  if (isAiDecision(d)) {
+    S.ai++; $("aiCount").textContent = String(S.ai);
+    S.calls++; setCounter("cCalls", S.calls);
+  }
   const verdict = d.verdict || "";
   const cls = verdict === "accepted" ? "ok" : verdict.startsWith("illegal") ? "bad" : verdict === "only_option" ? "" : "fb";
   const roles = { parse: ["فهم الإجابة", "Read the reply"], choose: ["اختيار الخطوة", "Choose next step"], explain: ["شرح للمالك", "Explain to owner"] };
@@ -365,10 +420,12 @@ function aiCall(d) {
   const menu = d.menu ? `<div class="menu">${d.menu.map((m) => `<span class="${m === d.picked ? "picked" : ""}">${esc(m)}</span>`).join("")}</div>` : "";
   const out = d.output ? `<pre class="out">${esc(prettyJson(d.output))}</pre>` : "";
   const prompt = d.prompt ? `<pre>${esc(d.prompt)}</pre>` : "";
+  const typedReply = d.role === "parse" && d.prompt ? d.prompt.match(/Owner's reply:\s*([^\n]+)/)?.[1] : "";
+  const received = typedReply ? `<div class="typed-reply"><b>reply as typed</b><span lang="ar" dir="rtl">${esc(typedReply)}</span></div>` : "";
   const header = (l) => `<header><span class="badge role">${esc(role[l])}</span><span class="badge">${esc(d.model || (l ? "no model" : "بلا نموذج"))}</span>`
     + `<span class="badge ${cls}">${esc(v[l])}</span>${d.ms != null ? `<span class="badge ms">${d.ms} ms</span>` : ""}</header>`;
   const card = document.createElement("div"); card.className = "call";
-  card.dataset.ar = header(0) + menu + prompt + out; card.dataset.en = header(1) + menu + prompt + out; card.dataset.html = "1";
+  card.dataset.ar = header(0) + menu + received + prompt + out; card.dataset.en = header(1) + menu + received + prompt + out; card.dataset.html = "1";
   card.innerHTML = pick(card.dataset.ar, card.dataset.en);
   $("aiList").prepend(card);
 }
@@ -385,7 +442,7 @@ function renderFinal() {
     const a = l === "ar";
     const r = [
       [a ? "أسئلة" : "Questions", m.questions_asked], [a ? "إجراءات المالك" : "Owner actions", m.human_touches],
-      [a ? "قرارات النموذج، خارج القائمة" : "Model decisions · outside the menu", `${m.model_calls} · ${m.illegal_choices ?? 0}`],
+      [a ? "قرارات الذكاء الاصطناعي، خارج القائمة" : "AI decisions · outside the menu", `${m.model_calls} · ${m.illegal_choices ?? 0}`],
       [a ? "مرصود من الخارج قبل → بعد" : "Observed from outside, before → after", `${pc(m.assessed_before)} → ${pc(m.assessed_after)}`],
       [a ? "تعديلات ثبتت بفحص جديد" : "Fixes verified by re-scan", (m.fixes_verified || []).length],
       [a ? "أُحيل إلى مختص" : "Handed to a person", (m.escalations || []).length],
@@ -398,8 +455,11 @@ function renderFinal() {
     return r;
   };
   const table = (l) => `<table>${rows(l).map(([k, v]) => `<tr><td>${k}</td><td>${v ?? "—"}</td></tr>`).join("")}</table>`;
-  const links = (l) => `<div class="links">${S.reportHref ? `<a class="pick" href="${esc(S.reportHref)}" target="_blank" rel="noopener">${l === "ar" ? "فتح التقرير" : "Open the report"}</a>` : ""}`
+  const links = (l) => {
+    const reportHref = l === "en" ? S.reportHref.replace(/\.report\.html$/, ".report.en.html") : S.reportHref;
+    return `<div class="links">${S.reportHref ? `<a class="pick" href="${esc(reportHref)}" target="_blank" rel="noopener">${l === "ar" ? "فتح التقرير" : "Open the report"}</a>` : ""}`
     + `${S.calendarHref ? `<a class="pick" href="${esc(S.calendarHref)}" target="_blank" rel="noopener">${l === "ar" ? "التقويم" : "Calendar file"}</a>` : ""}</div>`;
+  };
   const head = (l) => `<b>${mo ? (l === "ar" ? "اكتملت المراقبة" : "Monitoring complete") : (l === "ar" ? "اكتمل التقييم" : "Assessment complete")}</b>`;
   if (!S.final) S.final = bubble("agent final", "", "", "", true);
   const body = S.final.firstElementChild;

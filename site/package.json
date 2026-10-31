@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "lucide-static": "0.468.0"
+  }
+}

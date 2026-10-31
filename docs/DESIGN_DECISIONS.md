@@ -27,7 +27,7 @@ three options than planning freely.
 
 ## 3. Nothing a scanned target writes reaches the model
 
-The private worker returns only detector ids, host names, integers and hashes, and `src/officer/contract.py`
+The Iris scanner returns only detector ids, host names, integers and hashes, and `src/officer/contract.py`
 validates them. The boundary drops banners, page titles, TXT records and service replies.
 
 We rejected passing the raw scan output to the model "for context". Eval E4 plants 30 instructions in five places
@@ -69,13 +69,7 @@ Everything runs through Ollama on an 8 GB gaming GPU with no API keys: the hacka
 deployment needs none. Gate G0 picks the model for each job on our own tasks. We measured HUMAIN's ALLaM-7B
 alongside three other open models and report it as measured.
 
-## 8. The live scanner stays private
-
-The engine's public-release rules withhold the live-scan orchestrator, the ownership gate and the pilot runner,
-and this repository follows them. Iris calls those through a typed API on a private worker next to the lab (Oracle
-Cloud, Jeddah). Every live run is recorded and hash-chained, so you can check it without access to the worker.
-
-## 9. A lab, never a real company
+## 8. A lab, never a real company
 
 The demo company is fictional (`wahat-alramal.test`, a reserved top-level domain). Iris never scans real
 third-party domains: the ownership gate refuses them, and the lab is reachable only on a private network.
