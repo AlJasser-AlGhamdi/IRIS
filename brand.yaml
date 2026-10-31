@@ -24,5 +24,5 @@ fonts:
   arabic: "IBM Plex Sans Arabic"
   latin: "IBM Plex Sans"
   mono: "IBM Plex Mono"
-repo_url: ""   # filled at publish time
+repo_url: "https://github.com/AlJasser-AlGhamdi/iris"
 video_url: ""
