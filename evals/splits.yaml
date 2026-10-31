@@ -1,0 +1,18 @@
+# Frozen before any tuning (git tag `splits-frozen`). Development uses only the dev lists; held-out
+# lists are run once, at the end (`evals.run e1 --split held_out`, `evals.e6 --split held_out`).
+synthetic:
+  dev_seeds: [1, 2, 3, 4, 5]
+  # v2: the first range (1001-1020) was replaced before any model ran on it, because scripted-model
+  # ablation runs had used 1001-1010. See docs/ITERATIONS.md #6.
+  held_out_seeds: [4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 4009, 4010,
+                   4011, 4012, 4013, 4014, 4015, 4016, 4017, 4018, 4019, 4020]
+  personas: [honest, overstating, vague]
+lab:
+  dev_estates: [demo, seed-1, seed-2]
+  held_out_estates: [seed-9101, seed-9102, seed-9103, seed-9104, seed-9105, seed-9106]
+answers:
+  dev: evals/g0/answers_dev.csv          # 40, used to pick and tune the model
+  test: evals/e2/answers_test.csv        # 40 written for this evaluation, labelled by a native speaker
+  ood: evals/e2/answers_ood.csv          # 20 written by the project owner, styles absent from the templates
+robustness_seeds: [2001, 2002, 2003, 2004, 2005]
+ablation_seeds: [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]

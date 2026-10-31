@@ -1,0 +1,142 @@
+"""Deterministic mapping rules: golden fixtures + catalog-validity (Phase 4).
+
+The golden set is a regression lock: a fixed finding-set must always yield the same
+control IDs. Also asserts 100% rule coverage and that no rule can reference a control
+the OSCAL catalog does not contain.
+"""
+
+from __future__ import annotations
+
+from p2c.mapping.catalog import load_default_index
+from p2c.mapping.models import MappingMethod
+from p2c.mapping.rules import RULES, MappingEngine, check_id_from_finding, validate_rules
+from p2c.scanning.catalog import CATALOG, CheckId, build_finding
+from p2c.schemas.enums import EvidenceTier, Severity
+from p2c.schemas.models import Finding
+
+
+def _finding(check: CheckId, asset: str = "example.com"):
+    return build_finding(
+        check,
+        asset=asset,
+        observed_state=f"{check.value} on {asset}",
+        consent_ref="C1",
+        source_tool="atlas-scan",
+        tool_version="0.0.0",
+    )
+
+
+# Golden: check -> expected control IDs (regression lock, must not drift).
+GOLDEN: dict[CheckId, list[str]] = {
+    CheckId.MISSING_HSTS: [],
+    CheckId.MISSING_CSP: [],
+    CheckId.NO_HTTPS_REDIRECT: ["2-15-3-3", "2-8-3-3"],
+    CheckId.LEGACY_TLS_VERSION: ["2-8-3-1", "2-8-3-3", "2-15-3-3"],
+    CheckId.WEAK_TLS_CIPHER: ["2-8-3-1", "2-8-3-3", "2-15-3-3"],
+    CheckId.EXPIRED_CERTIFICATE: ["2-8-3-2", "2-15-3-3"],
+    CheckId.SELF_SIGNED_CERTIFICATE: ["2-15-3-3", "2-8-3-2"],
+    CheckId.WEAK_CERTIFICATE_KEY: ["2-8-3-1", "2-8-3-2"],
+    CheckId.WAF_ABSENT: [],
+    CheckId.EXPOSED_INTERNAL_PORT: ["2-5-3-1", "2-5-3-5"],
+    CheckId.EXPOSED_DATABASE_PORT: ["2-5-3-1", "2-5-3-5"],
+    CheckId.EXPOSED_MANAGEMENT_PORT: ["2-5-3-5"],
+    CheckId.EXPOSED_PRINTER_SERVICE: ["2-7-1-3", "2-5-3-1", "2-5-3-5"],
+    CheckId.HIGH_RISK_PORT_OPEN: ["2-5-3-5"],
+    CheckId.OUTDATED_EXPOSED_SOFTWARE: ["2-3-3-3", "2-10-3-4"],
+    CheckId.EOL_SOFTWARE_EXPOSED: ["2-3-3-3", "2-10-3-4"],
+    CheckId.SPF_MISSING: ["2-4-3-5"],
+    CheckId.DMARC_MISSING_OR_NONE: ["2-4-3-5"],
+    CheckId.DKIM_MISSING: [],
+}
+
+
+def test_golden_mappings_are_stable() -> None:
+    engine = MappingEngine()
+    for check, expected in GOLDEN.items():
+        mappings = engine.map_finding(_finding(check))
+        assert [m.control_id for m in mappings] == expected, check
+
+
+def test_all_rules_map_to_catalog_controls() -> None:
+    # Any rule referencing a non-catalog control id fails import-time validation.
+    validate_rules(load_default_index())
+
+
+def test_every_rule_is_covered_by_a_finding() -> None:
+    # 100% of deterministic rules exercised (spec §Phase 4 test).
+    engine = MappingEngine()
+    for check in RULES:
+        mappings = engine.map_finding(_finding(check))
+        # A hardening detector maps to no control, by design (2026-10-20); every other rule maps.
+        assert bool(mappings) == bool(CATALOG[check].control_ids), f"rule for {check} mapped wrongly"
+        assert all(m.method is MappingMethod.DETERMINISTIC for m in mappings)
+        assert all(m.confidence == 1.0 for m in mappings)
+
+
+def test_mappings_carry_tier_and_crosswalk() -> None:
+    engine = MappingEngine()
+    (spf,) = engine.map_finding(_finding(CheckId.SPF_MISSING))
+    assert spf.control_id == "2-4-3-5"
+    assert spf.tier == 1
+    assert spf.ncnicc_class_a == "4-2"  # crosswalk carried through
+    assert spf.rule_id == "MR-spf_missing"
+    assert spf.rationale
+
+
+def test_check_id_recovered_from_finding_id() -> None:
+    assert check_id_from_finding(_finding(CheckId.SPF_MISSING)) is CheckId.SPF_MISSING
+
+
+def test_map_findings_is_sorted_deterministic() -> None:
+    engine = MappingEngine()
+    findings = [_finding(CheckId.SPF_MISSING, "b.example"), _finding(CheckId.MISSING_HSTS, "a.example")]
+    out = engine.map_findings(findings)
+    keys = [(m.control_id, m.asset) for m in out]
+    assert keys == sorted(keys)
+
+
+def _raw_finding(finding_id: str, control_ids: list[str]) -> Finding:
+    return Finding(
+        finding_id=finding_id,
+        asset="example.com",
+        source_tool="nuclei",
+        tool_version="v3",
+        observed_state="some finding",
+        severity=Severity.HIGH,
+        control_ids=control_ids,
+        evidence_tier=EvidenceTier.TIER_1,
+        consent_ref="C1",
+    )
+
+
+def test_finding_with_noncatalog_control_id_is_dropped() -> None:
+    # A finding whose control_ids include a bogus id (and no known check) yields no
+    # mapping for the bogus id — the catalog is the only source of emittable ids.
+    finding = _raw_finding("cve-template:example.com", ["9-9-9-9", "2-8-3-3"])
+    ids = [m.control_id for m in MappingEngine().map_finding(finding)]
+    assert ids == ["2-8-3-3"]  # bogus 9-9-9-9 dropped
+
+
+def test_duplicate_control_ids_are_deduplicated() -> None:
+    # A finding (no known check) that repeats a control id must not emit duplicates.
+    finding = _raw_finding("nuclei:example.com", ["2-8-3-3", "2-8-3-3", "2-4-3-5"])
+    ids = [m.control_id for m in MappingEngine().map_finding(finding)]
+    assert ids == ["2-8-3-3", "2-4-3-5"]  # deduped, order-stable
+
+
+def test_rule_and_finding_tags_are_unioned_losslessly() -> None:
+    # A rule-matched finding that ALSO carries an extra catalog-valid tag keeps both:
+    # rule controls (attributed to the rule) + the extra tag (catalog-tagged).
+    finding = _raw_finding("spf_missing:example.com", ["2-4-3-5", "2-8-3-3"])
+    mappings = {m.control_id: m for m in MappingEngine().map_finding(finding)}
+    assert set(mappings) == {"2-4-3-5", "2-8-3-3"}
+    assert mappings["2-4-3-5"].rule_id == "MR-spf_missing"  # rule control
+    assert mappings["2-8-3-3"].rule_id is None  # extra catalog-tagged control
+    assert mappings["2-8-3-3"].rationale == "catalog-tagged finding"
+
+
+def test_mappings_carry_ncnicc_status() -> None:
+    (spf,) = MappingEngine().map_finding(_finding(CheckId.SPF_MISSING))
+    assert spf.ncnicc_class_a == "4-2"
+    assert spf.ncnicc_class_a_status == "M"
+    assert spf.ncnicc_class_b_status == "M"  # 2-4-3-5 is Class-B Mandatory

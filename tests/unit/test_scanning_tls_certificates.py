@@ -1,0 +1,285 @@
+"""Certificate detector contracts: self-signed, weak key, and the expiry read that was dead.
+
+Certificates are minted in-process so the matrix is deterministic and needs no network and no
+container. Each test names the contract clause it exercises. The three cases that matter most are
+the ones a naive implementation gets wrong:
+
+* a private-CA certificate is *not* self-signed, though a local trust store rejects it;
+* a certificate whose issuer name equals its subject name but whose signature was made by a
+  different key is *not* self-signed either, because the name test alone proves nothing;
+* a certificate that does not parse yields no finding at all, rather than a default posture.
+"""
+
+from __future__ import annotations
+
+import socket
+import ssl
+from datetime import UTC, datetime, timedelta
+
+import pytest
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.x509.oid import NameOID
+
+from p2c.scanning import tls as tls_module
+from p2c.scanning.catalog import CheckId
+from p2c.scanning.tls import TlsInfo, _parse_certificate, evaluate_tls
+
+NOW = datetime(2026, 1, 1, tzinfo=UTC)
+
+
+def _name(cn: str) -> x509.Name:
+    return x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, cn)])
+
+
+def _mint(
+    *,
+    subject: str = "leaf.example",
+    issuer: str | None = None,
+    signing_key: object | None = None,
+    subject_key: object | None = None,
+    not_after: datetime | None = None,
+) -> bytes:
+    """Return a DER certificate. ``issuer``/``signing_key`` default to self-issued, self-signed."""
+    subject_key = subject_key or rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    signing_key = signing_key or subject_key
+    builder = (
+        x509.CertificateBuilder()
+        .subject_name(_name(subject))
+        .issuer_name(_name(issuer or subject))
+        .public_key(subject_key.public_key())  # type: ignore[union-attr]
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(NOW - timedelta(days=1))
+        .not_valid_after(not_after or NOW + timedelta(days=365))
+    )
+    signed = builder.sign(signing_key, hashes.SHA256())  # type: ignore[arg-type]
+    return signed.public_bytes(serialization.Encoding.DER)
+
+
+# --- self_signed_certificate -------------------------------------------------------------
+
+
+def test_a_truly_self_signed_certificate_is_reported() -> None:
+    facts = _parse_certificate(_mint())
+    assert facts.self_signed is True
+    assert CheckId.SELF_SIGNED_CERTIFICATE in evaluate_tls(
+        TlsInfo("TLSv1.3", "TLS_AES_256_GCM_SHA384", self_signed=facts.self_signed), now=NOW
+    )
+
+
+def test_a_ca_issued_certificate_is_not_self_signed() -> None:
+    ca_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    facts = _parse_certificate(_mint(issuer="Example CA", signing_key=ca_key))
+    assert facts.self_signed is False
+    assert evaluate_tls(TlsInfo("TLSv1.3", "AES", self_signed=False), now=NOW) == []
+
+
+def test_a_private_ca_certificate_is_not_self_signed_even_though_no_store_trusts_it() -> None:
+    """The contract's headline exclusion: untrusted is a different fact from self-signed."""
+    internal_ca = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    facts = _parse_certificate(_mint(issuer="Acme Internal Root", signing_key=internal_ca))
+    assert facts.self_signed is False
+
+
+def test_matching_names_with_a_foreign_signature_are_not_self_signed() -> None:
+    """Issuer equals subject, but another key signed it, so the signature test must reject it."""
+    impostor = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    der = _mint(subject="same.example", issuer="same.example", signing_key=impostor)
+    facts = _parse_certificate(der)
+    assert facts.issuer == facts.subject
+    assert facts.self_signed is False
+
+
+def test_an_elliptic_curve_certificate_can_be_self_signed() -> None:
+    key = ec.generate_private_key(ec.SECP256R1())
+    facts = _parse_certificate(_mint(subject_key=key))
+    assert facts.self_signed is True
+
+
+# --- weak_certificate_key ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("bits", "weak"),
+    [(1024, True), (2048, True), (3072, False), (4096, False)],  # NCS-1:2020 section 5.1: 3072 bits
+)
+def test_rsa_key_sizes_against_the_documented_threshold(bits: int, weak: bool) -> None:
+    key = rsa.generate_private_key(public_exponent=65537, key_size=bits)
+    facts = _parse_certificate(_mint(subject_key=key))
+    assert (facts.key_algorithm, facts.key_bits) == ("rsa", bits)
+    fired = CheckId.WEAK_CERTIFICATE_KEY in evaluate_tls(
+        TlsInfo("TLSv1.3", "AES", key_algorithm=facts.key_algorithm, key_bits=facts.key_bits), now=NOW
+    )
+    assert fired is weak
+
+
+@pytest.mark.parametrize(
+    ("curve", "weak"),
+    [
+        (ec.SECP256R1(), False),
+        (ec.SECP384R1(), False),
+        (ec.SECP521R1(), False),
+        (ec.BrainpoolP256R1(), False),  # accepted by the NCS (section 5.1)
+        (ec.SECP192R1(), True),
+    ],
+)
+def test_elliptic_curves_against_the_approved_set(curve: ec.EllipticCurve, weak: bool) -> None:
+    facts = _parse_certificate(_mint(subject_key=ec.generate_private_key(curve)))
+    assert facts.key_algorithm == "ec"
+    fired = CheckId.WEAK_CERTIFICATE_KEY in evaluate_tls(
+        TlsInfo("TLSv1.3", "AES", key_algorithm="ec", key_bits=facts.key_bits, curve=facts.curve), now=NOW
+    )
+    assert fired is weak
+
+
+def test_dsa_and_eddsa_keys_against_the_ncs() -> None:
+    # The NCS accepts RSA and the listed curves (Curve25519 and Curve448 among them), never DSA.
+    def weak(algorithm: str, bits: int | None) -> bool:
+        info = TlsInfo("TLSv1.3", "AES", key_algorithm=algorithm, key_bits=bits)
+        return CheckId.WEAK_CERTIFICATE_KEY in evaluate_tls(info, now=NOW)
+
+    assert weak("dsa", 3072) and not weak("eddsa", None)
+
+
+def test_an_unread_key_raises_nothing() -> None:
+    assert evaluate_tls(TlsInfo("TLSv1.3", "AES", key_algorithm=None, key_bits=None), now=NOW) == []
+
+
+# --- expired_certificate: the read that never worked --------------------------------------
+
+
+def test_the_expiry_is_read_from_the_certificate() -> None:
+    """Regression for the live path: ``getpeercert()`` gives ``{}`` under CERT_NONE.
+
+    Before 2026-08-30 the inspector read ``notAfter`` out of that empty dict, so ``not_after``
+    was always ``None`` and ``expired_certificate`` could never fire against a real endpoint.
+    Only the pure function was tested, with a hand-built ``TlsInfo``, so nothing caught it.
+    """
+    expired = _mint(not_after=NOW - timedelta(days=1))
+    facts = _parse_certificate(expired)
+    assert facts.not_after is not None
+    assert facts.not_after < NOW
+    assert CheckId.EXPIRED_CERTIFICATE in evaluate_tls(
+        TlsInfo("TLSv1.3", "AES", not_after=facts.not_after), now=NOW
+    )
+
+
+def test_a_current_certificate_does_not_fire_the_expiry_check() -> None:
+    facts = _parse_certificate(_mint())
+    assert facts.not_after is not None
+    assert facts.not_after > NOW
+    # Only the expiry field is passed, so the self-signed branch cannot confound the assertion.
+    assert evaluate_tls(TlsInfo("TLSv1.3", "AES", not_after=facts.not_after), now=NOW) == []
+
+
+# --- the inconclusive state ---------------------------------------------------------------
+
+
+def test_a_malformed_certificate_yields_no_findings() -> None:
+    facts = _parse_certificate(b"not a certificate")
+    assert facts == type(facts)()
+    assert evaluate_tls(TlsInfo("TLSv1.3", "AES"), now=NOW) == []
+
+
+def test_an_absent_certificate_yields_no_findings() -> None:
+    for der in (None, b""):
+        facts = _parse_certificate(der)
+        assert facts.self_signed is None
+        assert facts.key_algorithm is None
+        assert facts.not_after is None
+
+
+# --- the live path itself, not just the pure function ---------------------------------------
+
+
+def test_the_inspector_asks_for_the_binary_certificate(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Pins the line that was broken for the whole life of the detector.
+
+    ``TlsInspector`` sets ``CERT_NONE`` so it observes rather than enforces, and under
+    ``CERT_NONE`` CPython's ``getpeercert()`` returns an empty dict. The inspector used to read
+    ``notAfter`` out of that dict, so ``expired_certificate`` could never fire against a real
+    endpoint. Every test at the time exercised the pure evaluator with a hand-built ``TlsInfo``,
+    so the suite stayed green. This test fails if anyone drops ``binary_form=True`` again.
+    """
+    der = _mint(not_after=NOW - timedelta(days=1))
+    calls: list[bool] = []
+
+    class _FakeTls:
+        def __enter__(self) -> _FakeTls:
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            return None
+
+        def version(self) -> str:
+            return "TLSv1.3"
+
+        def cipher(self) -> tuple[str, str, int]:
+            return ("TLS_AES_256_GCM_SHA384", "TLSv1.3", 256)
+
+        def getpeercert(self, binary_form: bool = False) -> object:
+            calls.append(binary_form)
+            return der if binary_form else {}
+
+    class _FakeSock:
+        def __enter__(self) -> _FakeSock:
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            return None
+
+    monkeypatch.setattr(socket, "create_connection", lambda *a, **k: _FakeSock())
+    monkeypatch.setattr(ssl.SSLContext, "wrap_socket", lambda self, sock, **k: _FakeTls())
+
+    info = tls_module.TlsInspector().inspect("example.test", 443)
+
+    reason = "the inspector must ask for the DER; the dict form is empty under CERT_NONE"
+    assert calls and all(calls), reason  # the first handshake and both probes all ask for the DER
+    assert info.not_after is not None, "the expiry must survive the live path, not just the pure one"
+    assert CheckId.EXPIRED_CERTIFICATE in evaluate_tls(info, now=NOW)
+
+
+def test_a_not_yet_valid_certificate_is_reported() -> None:
+    """The catalogue row is titled "Expired or not-yet-valid"; both bounds are now tested."""
+    future = _mint(not_after=NOW + timedelta(days=800))
+    facts = _parse_certificate(future)
+    assert facts.not_before is not None
+    early = NOW - timedelta(days=30)
+    assert CheckId.EXPIRED_CERTIFICATE in evaluate_tls(
+        TlsInfo("TLSv1.3", "AES", not_before=facts.not_before), now=early
+    )
+    assert CheckId.EXPIRED_CERTIFICATE not in evaluate_tls(
+        TlsInfo("TLSv1.3", "AES", not_before=facts.not_before), now=NOW
+    )
+
+
+def test_the_legacy_and_weak_suite_probes_drive_their_detectors() -> None:
+    modern = TlsInfo("TLSv1.3", "TLS_AES_256_GCM_SHA384")
+    assert evaluate_tls(modern, now=NOW) == []
+    suite = "ECDHE-RSA-AES256-GCM-SHA384"
+    accepts_old = TlsInfo("TLSv1.2", suite, legacy_accepted=True, weak_accepted=False)
+    assert evaluate_tls(accepts_old, now=NOW) == [CheckId.LEGACY_TLS_VERSION]
+    accepts_null = TlsInfo("TLSv1.2", suite, legacy_accepted=False, weak_accepted=True)
+    assert evaluate_tls(accepts_null, now=NOW) == [CheckId.WEAK_TLS_CIPHER]
+    unanswered = TlsInfo("TLSv1.3", "TLS_AES_256_GCM_SHA384", legacy_accepted=None, weak_accepted=None)
+    assert evaluate_tls(unanswered, now=NOW) == []  # an unanswered probe raises nothing
+
+
+def test_a_limit_of_our_own_library_leaves_a_probe_unread(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A client build without TLS 1.1 fails before asking the server; that is not the server refusing.
+    def local_limit(*args: object, **kwargs: object) -> None:
+        error = ssl.SSLError(1, "no protocols available")
+        error.reason = "NO_PROTOCOLS_AVAILABLE"
+        raise error
+
+    monkeypatch.setattr(tls_module, "_handshake", local_limit)
+    assert tls_module._accepts("example.test", 443, tls_module._LEGACY_PROBE, 1.0) is None
+
+    def refused(*args: object, **kwargs: object) -> None:
+        error = ssl.SSLError(1, "alert")
+        error.reason = "TLSV1_ALERT_PROTOCOL_VERSION"
+        raise error
+
+    monkeypatch.setattr(tls_module, "_handshake", refused)
+    assert tls_module._accepts("example.test", 443, tls_module._LEGACY_PROBE, 1.0) is False

@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "note": "Plain-language questions in our own words. A question covers the NCNICC Class B rows (Mandatory or Recommended) of its subdomains plus any extra ids; the overlay supplies the ids at load time. No NCA text appears here.",
+  "questions": [
+    {
+      "qid": "Q01",
+      "topic": "email",
+      "subdomains": ["2-4"],
+      "extra_controls": [],
+      "contradictable_by": ["spf_missing", "dmarc_missing_or_none"],
+      "prompt_ar": "هل بريد شركتكم الإلكتروني محمي من انتحال اسمها؟ مثلاً: هل لديكم سجلات SPF وDMARC، أو يتولى مزوّد البريد ذلك؟",
+      "prompt_en": "Is your company email protected against someone spoofing your name? For example, do you have SPF and DMARC records, or does your mail provider handle it?",
+      "evidence_hint_ar": "لقطة من إعدادات النطاق أو رسالة من مزوّد البريد تكفي.",
+      "evidence_hint_en": "A screenshot of the domain settings or a note from your mail provider is enough."
+    },
+    {
+      "qid": "Q02",
+      "topic": "network",
+      "subdomains": ["2-5"],
+      "extra_controls": [],
+      "contradictable_by": ["exposed_internal_port", "exposed_database_port", "exposed_management_port", "high_risk_port_open"],
+      "prompt_ar": "هل قواعد البيانات وأنظمة الإدارة الداخلية (مثل الدخول عن بُعد للخوادم) مغلقة أمام الإنترنت ولا يصل إليها إلا من داخل الشركة أو عبر VPN؟",
+      "prompt_en": "Are your databases and internal admin services (such as remote server access) closed to the internet and reachable only from inside the company or through a VPN?",
+      "evidence_hint_ar": "مخطط الشبكة أو إعدادات الجدار الناري.",
+      "evidence_hint_en": "A network diagram or firewall settings."
+    },
+    {
+      "qid": "Q03",
+      "topic": "printers",
+      "subdomains": [],
+      "extra_controls": ["2-7-1-1", "2-7-1-2", "2-7-1-3"],
+      "contradictable_by": ["exposed_printer_service"],
+      "prompt_ar": "هل الطابعات وخوادم الطباعة تعمل داخل شبكة الشركة فقط، وغير ظاهرة على الإنترنت؟",
+      "prompt_en": "Do your printers and print servers work only inside the company network, and not appear on the internet?",
+      "evidence_hint_ar": "قائمة الطابعات وإعداداتها.",
+      "evidence_hint_en": "The printer list and its settings."
+    },
+    {
+      "qid": "Q04",
+      "topic": "encryption",
+      "subdomains": ["2-8", "2-15"],
+      "extra_controls": [],
+      "contradictable_by": ["no_https_redirect", "legacy_tls_version", "weak_tls_cipher", "expired_certificate", "self_signed_certificate", "weak_certificate_key"],
+      "prompt_ar": "هل موقعكم وتطبيقاتكم على الإنترنت مشفّرة دائماً (HTTPS فقط، مع تحويل تلقائي من HTTP) وبشهادة سارية؟",
+      "prompt_en": "Are your website and online apps always encrypted (HTTPS only, with automatic redirect from HTTP) with a valid certificate?",
+      "evidence_hint_ar": "إعدادات الاستضافة أو الشهادة.",
+      "evidence_hint_en": "Hosting or certificate settings."
+    },
+    {
+      "qid": "Q05",
+      "topic": "accounts",
+      "subdomains": ["2-2"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل لكل موظف حساب خاص به، وتُلغى الحسابات عند ترك العمل، ويُطلب التحقق الثنائي (MFA) للدخول عن بُعد وللحسابات ذات الصلاحيات العالية؟",
+      "prompt_en": "Does every employee have their own account, are accounts removed when people leave, and is two-factor login (MFA) required for remote access and admin accounts?",
+      "evidence_hint_ar": "لقطة من إعدادات MFA أو سياسة الحسابات.",
+      "evidence_hint_en": "A screenshot of the MFA settings or the account policy."
+    },
+    {
+      "qid": "Q06",
+      "topic": "updates",
+      "subdomains": ["2-3"],
+      "extra_controls": [],
+      "contradictable_by": ["outdated_exposed_software", "eol_software_exposed"],
+      "prompt_ar": "هل تُحدَّث الأجهزة والخوادم والبرامج بانتظام، وعليها برنامج حماية من الفيروسات مُفعّل؟",
+      "prompt_en": "Are your computers, servers and software updated regularly, with antivirus protection turned on?",
+      "evidence_hint_ar": "تقرير من لوحة إدارة التحديثات أو مضاد الفيروسات.",
+      "evidence_hint_en": "A report from the update or antivirus console."
+    },
+    {
+      "qid": "Q07",
+      "topic": "backup",
+      "subdomains": ["2-9"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل تأخذون نسخاً احتياطية من بياناتكم المهمة بانتظام، وتحفظونها بعيداً عن الأنظمة الأصلية، وجرّبتم الاستعادة منها؟",
+      "prompt_en": "Do you back up your important data regularly, keep the copies away from the original systems, and have you tested restoring from them?",
+      "evidence_hint_ar": "سجل آخر نسخة احتياطية أو آخر تجربة استعادة.",
+      "evidence_hint_en": "The log of the last backup or the last restore test."
+    },
+    {
+      "qid": "Q08",
+      "topic": "vulnerabilities",
+      "subdomains": ["2-10", "2-11"],
+      "extra_controls": [],
+      "contradictable_by": ["outdated_exposed_software", "eol_software_exposed"],
+      "prompt_ar": "هل تفحصون أنظمتكم دورياً بحثاً عن الثغرات، وتعالجون الخطيرة منها خلال مدة محددة؟",
+      "prompt_en": "Do you scan your systems for vulnerabilities periodically and fix the serious ones within a set time?",
+      "evidence_hint_ar": "آخر تقرير فحص ثغرات.",
+      "evidence_hint_en": "The latest vulnerability scan report."
+    },
+    {
+      "qid": "Q09",
+      "topic": "logging",
+      "subdomains": ["2-12"],
+      "extra_controls": ["2-12-1-2"],
+      "contradictable_by": [],
+      "prompt_ar": "هل تحتفظون بسجلات الدخول والأحداث المهمة للأنظمة، ويراجعها أحد عند حدوث شيء غريب؟",
+      "prompt_en": "Do you keep logs of logins and important system events, and does someone review them when something looks wrong?",
+      "evidence_hint_ar": "مثال من لوحة السجلات أو التنبيهات.",
+      "evidence_hint_en": "An example from the log or alert console."
+    },
+    {
+      "qid": "Q10",
+      "topic": "incidents",
+      "subdomains": ["2-13"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "إذا تعرّضتم لاختراق أو برنامج فدية، هل تعرفون من يتصرف وماذا يفعل، ومن تبلغون؟",
+      "prompt_en": "If you suffered a breach or ransomware, do you know who acts, what they do, and whom you report to?",
+      "evidence_hint_ar": "خطة الاستجابة للحوادث، ولو صفحة واحدة.",
+      "evidence_hint_en": "The incident response plan, even a single page."
+    },
+    {
+      "qid": "Q11",
+      "topic": "physical",
+      "subdomains": ["2-14"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل غرفة الخوادم أو أجهزة الشبكة مقفلة، ولا يدخلها إلا المخوَّلون؟",
+      "prompt_en": "Is the server room or network equipment locked, with only authorised people allowed in?",
+      "evidence_hint_ar": "صورة القفل أو سجل الدخول.",
+      "evidence_hint_en": "A photo of the lock or the access log."
+    },
+    {
+      "qid": "Q12",
+      "topic": "assets",
+      "subdomains": ["2-1"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل لديكم قائمة محدّثة بأجهزة الشركة وأنظمتها وبرامجها، ومن المسؤول عن كل منها؟",
+      "prompt_en": "Do you have an up-to-date list of the company's devices, systems and software, and who is responsible for each?",
+      "evidence_hint_ar": "جدول الأصول.",
+      "evidence_hint_en": "The asset spreadsheet."
+    },
+    {
+      "qid": "Q13",
+      "topic": "governance",
+      "subdomains": ["1-2", "1-3", "1-4", "1-5", "1-8"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل لديكم سياسة مكتوبة للأمن السيبراني معتمدة من الإدارة، وشخص مسؤول عنها، وتراجعونها دورياً؟",
+      "prompt_en": "Do you have a written cybersecurity policy approved by management, a person responsible for it, and do you review it periodically?",
+      "evidence_hint_ar": "السياسة المعتمدة أو قرار التكليف.",
+      "evidence_hint_en": "The approved policy or the appointment letter."
+    },
+    {
+      "qid": "Q14",
+      "topic": "awareness",
+      "subdomains": ["1-10"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل يتلقى الموظفون توعية بالأمن السيبراني، مثل كيف يتعرفون على رسائل التصيّد؟",
+      "prompt_en": "Do employees get cybersecurity awareness, such as how to recognise phishing messages?",
+      "evidence_hint_ar": "مادة التوعية أو قائمة الحضور.",
+      "evidence_hint_en": "The awareness material or the attendance list."
+    },
+    {
+      "qid": "Q15",
+      "topic": "devices_data",
+      "subdomains": ["2-6", "2-7"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "هل الأجهزة المحمولة (الجوالات والحواسيب) التي فيها بيانات الشركة محمية بكلمة مرور وتشفير، وتُصنَّف البيانات الحساسة وتُحمى؟",
+      "prompt_en": "Are mobile devices (phones and laptops) holding company data protected with a passcode and encryption, and is sensitive data classified and protected?",
+      "evidence_hint_ar": "إعدادات إدارة الأجهزة أو سياسة تصنيف البيانات.",
+      "evidence_hint_en": "Device management settings or the data classification policy."
+    },
+    {
+      "qid": "Q16",
+      "topic": "third_party_cloud",
+      "subdomains": ["4-1", "4-2"],
+      "extra_controls": [],
+      "contradictable_by": [],
+      "prompt_ar": "عند التعامل مع مزوّدين خارجيين أو خدمات سحابية، هل تضعون شروطاً أمنية في العقود، وتعرفون أين تُحفظ بياناتكم؟",
+      "prompt_en": "When you use outside suppliers or cloud services, do you put security terms in the contracts, and do you know where your data is stored?",
+      "evidence_hint_ar": "بند الأمن في العقد أو صفحة موقع البيانات لدى المزوّد.",
+      "evidence_hint_en": "The security clause of the contract or the provider's data-location page."
+    }
+  ]
+}

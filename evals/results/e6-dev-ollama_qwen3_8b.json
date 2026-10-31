@@ -1,0 +1,161 @@
+[
+ {
+  "estate": "demo",
+  "completed": true,
+  "defects": [
+   "spf_missing",
+   "dmarc_none",
+   "mysql_3306",
+   "ipp_631",
+   "ssh_22",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "dmarc_missing_or_none",
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "no_https_redirect",
+   "spf_missing"
+  ],
+  "found": [
+   "dmarc_missing_or_none",
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "no_https_redirect",
+   "spf_missing"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "publish_spf",
+   "set_dmarc_reject",
+   "close_db_port",
+   "close_cache_port",
+   "close_printer_ports",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_db_port",
+   "close_printer_ports",
+   "enable_https_redirect",
+   "publish_spf",
+   "set_dmarc_reject"
+  ],
+  "remaining_defects": [
+   "ssh_22"
+  ],
+  "escalations": [
+   "risky_fix:exposed_management_port"
+  ],
+  "seconds": 137.3,
+  "human_touches": 27,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02",
+   "Q04"
+  ]
+ },
+ {
+  "estate": "seed-1",
+  "completed": true,
+  "defects": [
+   "dmarc_missing",
+   "lpd_515",
+   "ssh_22",
+   "ftp_21"
+  ],
+  "planted_detectors": [
+   "dmarc_missing_or_none",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "high_risk_port_open"
+  ],
+  "found": [
+   "dmarc_missing_or_none",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "high_risk_port_open"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "set_dmarc_reject",
+   "close_printer_ports",
+   "close_ftp_port"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_ftp_port",
+   "close_printer_ports",
+   "set_dmarc_reject"
+  ],
+  "remaining_defects": [
+   "ssh_22"
+  ],
+  "escalations": [
+   "risky_fix:exposed_management_port"
+  ],
+  "seconds": 110.7,
+  "human_touches": 27,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02"
+  ]
+ },
+ {
+  "estate": "seed-2",
+  "completed": true,
+  "defects": [
+   "spf_missing",
+   "mysql_3306",
+   "ssh_22"
+  ],
+  "planted_detectors": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_management_port",
+   "spf_missing"
+  ],
+  "found": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_management_port",
+   "spf_missing"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "publish_spf",
+   "close_db_port",
+   "close_cache_port"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_db_port",
+   "publish_spf"
+  ],
+  "remaining_defects": [
+   "ssh_22"
+  ],
+  "escalations": [
+   "risky_fix:exposed_management_port"
+  ],
+  "seconds": 106.4,
+  "human_touches": 27,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02"
+  ]
+ }
+]

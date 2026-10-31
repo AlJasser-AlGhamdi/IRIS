@@ -1,0 +1,21 @@
+{
+  "note": "Typed fact sets for the explanation role. Each has the deterministic template the agent falls back to.",
+  "sets": [
+    {"id": "F01", "facts": {"kind": "finding", "area": "email", "observation": "no SPF record published for the domain", "control": "2-4-3-5", "next": "propose publishing an SPF record"},
+     "template_ar": "لم نجد سجل SPF لنطاقكم، وهذا يسهّل على المحتالين إرسال رسائل باسم شركتكم. سنقترح عليكم إضافة السجل ثم نتحقق منه بفحص جديد."},
+    {"id": "F02", "facts": {"kind": "finding", "area": "email", "observation": "DMARC policy is set to none", "control": "2-4-3-5", "next": "propose changing the policy to reject"},
+     "template_ar": "سياسة DMARC لديكم مضبوطة على none، أي أن الرسائل المزوّرة باسمكم لا تُرفض. سنقترح تغييرها إلى reject ثم نتحقق."},
+    {"id": "F03", "facts": {"kind": "finding", "area": "network", "observation": "a database service answers from the internet on port 3306", "control": "2-5-3-1", "next": "propose closing the port"},
+     "template_ar": "قاعدة بيانات لديكم تستجيب من الإنترنت على المنفذ 3306، وهذا يعرّض بياناتكم للخطر. سنقترح إغلاق المنفذ ثم نتحقق بفحص جديد."},
+    {"id": "F04", "facts": {"kind": "finding", "area": "printers", "observation": "a print service is reachable from the internet on port 631", "control": "2-7-1-3", "next": "propose closing the port"},
+     "template_ar": "خدمة طباعة لديكم ظاهرة على الإنترنت عبر المنفذ 631. سنقترح إغلاقها حتى تبقى الطباعة داخل الشبكة فقط."},
+    {"id": "F05", "facts": {"kind": "contradiction", "claim": "the owner said company email is protected against spoofing", "observation": "DMARC policy is set to none", "control": "2-4-3-5", "next": "ask the owner to confirm, and record the observed state"},
+     "template_ar": "ذكرتم أن البريد محمي من الانتحال، لكن الفحص وجد سياسة DMARC مضبوطة على none. سنعتمد ما رصده الفحص، ونرجو تأكيدكم."},
+    {"id": "F06", "facts": {"kind": "verified_fix", "fix": "close the database port", "result": "a new scan no longer sees the database port", "control": "2-5-3-1"},
+     "template_ar": "أُغلق منفذ قاعدة البيانات، والفحص الجديد لم يعد يراه من الإنترنت. سُجّل ذلك كدليل على المعالجة."},
+    {"id": "F07", "facts": {"kind": "scope", "staff": "300", "class_b_range": "6 to 249 staff", "next": "explain the company is outside Class B and that a different scope applies"},
+     "template_ar": "عدد موظفيكم 300، وهذا خارج نطاق الفئة (ب) المخصّصة للمنشآت من 6 إلى 249 موظفاً. سنوضح لكم النطاق المناسب لحالتكم."},
+    {"id": "F08", "facts": {"kind": "escalation", "observation": "remote server login (SSH) is open on the internet", "reason": "closing it automatically could lock the owner out of the server", "next": "hand the decision to a person responsible for the server"},
+     "template_ar": "الدخول عن بُعد إلى الخادم (SSH) مفتوح على الإنترنت، لكن إغلاقه تلقائياً قد يمنعكم من الوصول إلى الخادم. لذلك أحلنا القرار إلى المسؤول عن الخادم."}
+  ]
+}

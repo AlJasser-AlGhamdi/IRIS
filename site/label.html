@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labelling</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#0F1720; --paper:#F6F4EF; --accent:#0E7C66; --line:#E2DED5; --muted:#5B6672; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:"IBM Plex Sans Arabic","IBM Plex Sans",sans-serif; }
+header { position:sticky; top:0; background:#fff; border-bottom:1px solid var(--line); padding:12px 16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; z-index:2; }
+header b { margin-inline-end:auto; }
+.tab { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; cursor:pointer; }
+.tab.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.status { color:var(--muted); font-size:13px; }
+main { max-width:900px; margin:0 auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+.card.done { border-color:#BFE3CE; }
+.q { color:var(--muted); font-size:13px; margin-bottom:6px; }
+.reply { font-size:18px; margin:4px 0 10px; }
+.facts { direction:ltr; text-align:left; font-size:12px; color:var(--muted); background:var(--paper); padding:6px 8px; border-radius:8px; margin-bottom:6px; }
+.row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.row button { border:1px solid var(--accent); background:#fff; color:var(--accent); border-radius:8px; padding:6px 12px; cursor:pointer; font:inherit; }
+.row button.on { background:var(--accent); color:#fff; }
+.sep { width:1px; height:24px; background:var(--line); margin:0 6px; }
+textarea { width:100%; box-sizing:border-box; font:inherit; font-size:16px; border:1px solid var(--line); border-radius:8px; padding:8px; min-height:52px; }
+.help { background:#fff; border:1px dashed var(--accent); border-radius:12px; padding:10px 14px; font-size:14px; line-height:1.7; }
+.id { float:left; color:var(--muted); font-size:12px; direction:ltr; }
+</style>
+</head>
+<body>
+<header>
+  <b>تعليم البيانات</b>
+  <button class="tab" data-set="dev">١) التطوير ٤٠</button>
+  <button class="tab" data-set="test">٢) الاختبار ٤٠</button>
+  <button class="tab" data-set="ood">٣) إجاباتك ٤٠</button>
+  <button class="tab" data-set="rating">٤) تقييم الشروحات ٣٢</button>
+  <span class="status" id="status"></span>
+</header>
+<main id="main"></main>
+<script>
+"use strict";
+const HELP = {
+  dev: "اختر لكل رد: <b>نعم</b> = الممارسة مطبقة بالكامل، <b>لا</b> = غير مطبقة، <b>جزئياً</b> = مطبقة جزئياً أو غير منتظمة، <b>لا يعرف</b> = المالك لا يعرف أو غير متأكد أو يسأل عن المعنى. ثم <b>دليل</b> إذا عرض المالك إثباتاً (صورة، تقرير، مستند). يُحفظ كل شيء تلقائياً.",
+  test: "نفس الطريقة: اختر التصنيف، وفعّل <b>دليل</b> إذا عرض المالك إثباتاً.",
+  ood: "اكتب ردّاً بأسلوبك أنت على السؤال المعروض، بأساليب لم تُستخدم: عربيزي (eh 3indna backup)، إنجليزي، رد طويل، مزح، خلط لغات. ثم صنّف ردّك.",
+  rating: "قيّم كل شرح من ١ إلى ٥: هل هو واضح، وصحيح بالنسبة للحقائق المعروضة، ومناسب لصاحب منشأة؟ اترك الصف فارغاً إذا كان النص فارغاً. أسماء النماذج مخفية.",
+};
+let current = null, data = null, saveTimer = null;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+document.querySelectorAll(".tab").forEach((b) => b.onclick = () => load(b.dataset.set));
+
+async function load(set) {
+  current = set;
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("on", b.dataset.set === set));
+  data = await fetch(`api/label/${set}`).then((r) => r.json());
+  render();
+}
+
+function progress() {
+  const col = current === "rating" ? 4 : 3;
+  const done = data.rows.filter((r) => (r[col] || "").trim()).length;
+  $("#status").textContent = `${done} / ${data.rows.length}`;
+}
+
+function render() {
+  const main = $("#main"); main.innerHTML = `<div class="help">${HELP[current]}</div>`;
+  data.rows.forEach((r, i) => main.append(current === "rating" ? ratingCard(r, i) : answerCard(r, i)));
+  progress();
+}
+
+function answerCard(r, i) {
+  const q = data.questions[r[1]] || { ar: "", en: "" };
+  const card = document.createElement("div"); card.className = "card" + (r[3] ? " done" : "");
+  const reply = current === "ood"
+    ? `<textarea placeholder="اكتب ردّك هنا…">${esc(r[2])}</textarea>`
+    : `<div class="reply">${esc(r[2])}</div>`;
+  card.innerHTML = `<span class="id">${esc(r[0])} · ${esc(r[1])}</span><div class="q">${esc(q.ar)}</div>${reply}<div class="row"></div>`;
+  const row = card.querySelector(".row");
+  for (const [v, label] of [["yes", "نعم"], ["no", "لا"], ["partial", "جزئياً"], ["unknown", "لا يعرف"]]) {
+    const b = document.createElement("button"); b.textContent = label; b.classList.toggle("on", r[3] === v);
+    b.onclick = () => { r[3] = v; row.querySelectorAll("button.lab").forEach((x) => x.classList.remove("on")); b.classList.add("on"); card.classList.add("done"); save(); };
+    b.classList.add("lab"); row.append(b);
+  }
+  const sep = document.createElement("span"); sep.className = "sep"; row.append(sep);
+  const ev = document.createElement("button"); ev.textContent = "دليل"; ev.classList.toggle("on", r[4] === "y");
+  ev.onclick = () => { r[4] = r[4] === "y" ? "n" : "y"; ev.classList.toggle("on", r[4] === "y"); save(); };
+  row.append(ev);
+  const ta = card.querySelector("textarea");
+  if (ta) ta.oninput = () => { r[2] = ta.value; save(); };
+  return card;
+}
+
+function ratingCard(r, i) {
+  const card = document.createElement("div"); card.className = "card" + (r[4] ? " done" : "");
+  let facts = r[2]; try { facts = Object.entries(JSON.parse(r[2])).map(([k, v]) => `${k}: ${v}`).join(" · "); } catch { }
+  card.innerHTML = `<span class="id">${esc(r[0])}</span><div class="facts">${esc(facts)}</div><div class="reply">${esc(r[3]) || "<i>(فارغ)</i>"}</div><div class="row"></div>`;
+  const row = card.querySelector(".row");
+  for (let n = 1; n <= 5; n++) {
+    const b = document.createElement("button"); b.textContent = String(n); b.classList.toggle("on", r[4] === String(n));
+    b.onclick = () => { r[4] = String(n); row.querySelectorAll("button").forEach((x) => x.classList.remove("on")); b.classList.add("on"); card.classList.add("done"); save(); };
+    row.append(b);
+  }
+  return card;
+}
+
+function save() {
+  progress(); clearTimeout(saveTimer);
+  try { localStorage.setItem("labels-" + current, JSON.stringify(data)); } catch { /* backup only */ }
+  saveTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`api/label/${current}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ header: data.header, rows: data.rows }) });
+      if (!r.ok) throw new Error(String(r.status));
+      $("#status").textContent += " ✓ محفوظ";
+      $("#status").style.color = "";
+    } catch (e) {
+      $("#status").textContent = "لم يُحفظ، لا تغلق الصفحة (" + e.message + ")";
+      $("#status").style.color = "#C2412D";
+      saveTimer = setTimeout(save, 3000);
+    }
+  }, 400);
+}
+
+load("dev");
+</script>
+</body>
+</html>

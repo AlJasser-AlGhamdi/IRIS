@@ -1,0 +1,53 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//compliance-officer//calendar//AR
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:sme000-org.com.sa-0-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20261106
+RRULE:FREQ=WEEKLY
+SUMMARY:جولة مراقبة أمنية · منشأة تجريبية
+DESCRIPTION:يعيد الوكيل الفحص ويعالج ما رجع.
+END:VEVENT
+BEGIN:VEVENT
+UID:sme000-org.com.sa-1-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20270128
+RRULE:FREQ=MONTHLY;INTERVAL=3
+SUMMARY:تجربة استعادة من النسخة الاحتياطية · منشأة تجريبية
+DESCRIPTION:استعيدوا ملفاً وقاعدة بيانات وسجلوا النتيجة.
+END:VEVENT
+BEGIN:VEVENT
+UID:sme000-org.com.sa-2-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20270428
+RRULE:FREQ=MONTHLY;INTERVAL=6
+SUMMARY:مراجعة الحسابات والصلاحيات · منشأة تجريبية
+DESCRIPTION:احذفوا ما لم يعد مستخدماً وتأكدوا من التحقق الثنائي.
+END:VEVENT
+BEGIN:VEVENT
+UID:sme000-org.com.sa-3-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20261129
+RRULE:FREQ=MONTHLY;INTERVAL=3
+SUMMARY:تذكير الموظفين برسائل التصيّد · منشأة تجريبية
+DESCRIPTION:أرسلوا رسالة التوعية للموظفين.
+END:VEVENT
+BEGIN:VEVENT
+UID:sme000-org.com.sa-4-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20271030
+RRULE:FREQ=YEARLY
+SUMMARY:مراجعة سياسة الأمن السيبراني · منشأة تجريبية
+DESCRIPTION:راجعوا السياسة واعتمدوا أي تعديل.
+END:VEVENT
+BEGIN:VEVENT
+UID:sme000-org.com.sa-5-20261030T233520Z@officer
+DTSTAMP:20261030T233520Z
+DTSTART;VALUE=DATE:20270826
+RRULE:FREQ=YEARLY
+SUMMARY:تمرين مكتبي على حادث برنامج فدية · منشأة تجريبية
+DESCRIPTION:طبّقوا خطة الاستجابة للحوادث على سيناريو.
+END:VEVENT
+END:VCALENDAR

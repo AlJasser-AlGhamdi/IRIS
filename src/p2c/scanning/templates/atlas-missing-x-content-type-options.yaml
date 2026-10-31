@@ -1,0 +1,23 @@
+id: atlas-missing-x-content-type-options
+info:
+  name: Missing X-Content-Type-Options header (MIME sniffing)
+  author: atlas
+  severity: low
+  description: The endpoint responds 200 without X-Content-Type-Options nosniff.
+  tags: atlas,headers,misconfig,ecc
+  metadata:
+    atlas-check-id: missing_x_content_type_options
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: header
+        words:
+          - "X-Content-Type-Options"
+        negative: true

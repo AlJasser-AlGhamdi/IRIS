@@ -1,0 +1,53 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//compliance-officer//calendar//AR
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:wahat-alramal.test-0-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20261106
+RRULE:FREQ=WEEKLY
+SUMMARY:جولة مراقبة أمنية · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:يعيد الوكيل الفحص ويعالج ما رجع.
+END:VEVENT
+BEGIN:VEVENT
+UID:wahat-alramal.test-1-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20270128
+RRULE:FREQ=MONTHLY;INTERVAL=3
+SUMMARY:تجربة استعادة من النسخة الاحتياطية · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:استعيدوا ملفاً وقاعدة بيانات وسجلوا النتيجة.
+END:VEVENT
+BEGIN:VEVENT
+UID:wahat-alramal.test-2-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20270428
+RRULE:FREQ=MONTHLY;INTERVAL=6
+SUMMARY:مراجعة الحسابات والصلاحيات · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:احذفوا ما لم يعد مستخدماً وتأكدوا من التحقق الثنائي.
+END:VEVENT
+BEGIN:VEVENT
+UID:wahat-alramal.test-3-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20261129
+RRULE:FREQ=MONTHLY;INTERVAL=3
+SUMMARY:تذكير الموظفين برسائل التصيّد · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:أرسلوا رسالة التوعية للموظفين.
+END:VEVENT
+BEGIN:VEVENT
+UID:wahat-alramal.test-4-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20271030
+RRULE:FREQ=YEARLY
+SUMMARY:مراجعة سياسة الأمن السيبراني · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:راجعوا السياسة واعتمدوا أي تعديل.
+END:VEVENT
+BEGIN:VEVENT
+UID:wahat-alramal.test-5-20261030T201558Z@officer
+DTSTAMP:20261030T201558Z
+DTSTART;VALUE=DATE:20270826
+RRULE:FREQ=YEARLY
+SUMMARY:تمرين مكتبي على حادث برنامج فدية · مؤسسة واحة الرمال للتجارة
+DESCRIPTION:طبّقوا خطة الاستجابة للحوادث على سيناريو.
+END:VEVENT
+END:VCALENDAR

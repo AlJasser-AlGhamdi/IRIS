@@ -1,0 +1,41 @@
+# The demo lab: one fictional company (wahat-alramal.test) on a private bridge network.
+#
+#   cd ~/demolab && ./up.sh          # seed the demo estate (if no state yet), build, start
+#   cd ~/demolab && ./down.sh        # stop and remove the lab (this project only)
+#
+# Nothing is published on a host port: the lab is reachable only from the server itself, where the
+# private worker scans it over the bridge. The worker changes the lab by rewriting ./state; lab-web's
+# labd and lab-dns's file plugin pick the change up within a second or two.
+name: demolab
+
+services:
+  lab-dns:
+    image: coredns/coredns:1.11.3@sha256:9caabbf6238b189a65d0d6e6ac138de60d6a1c419e5a341fbbb7c78382559c6e
+    command: ["-conf", "/etc/coredns/Corefile"]
+    volumes:
+      - ./dns/Corefile:/etc/coredns/Corefile:ro
+      - ./state:/zones:ro
+    networks:
+      lab:
+        ipv4_address: 172.29.53.53
+    restart: unless-stopped
+
+  lab-web:
+    build: ./web
+    image: demolab-web:1
+    init: true
+    volumes:
+      - ./state:/state
+    networks:
+      lab:
+        ipv4_address: 172.29.53.10
+    restart: unless-stopped
+
+networks:
+  lab:
+    name: demolab_lab
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.53.0/24
+          gateway: 172.29.53.1

@@ -1,0 +1,91 @@
+{
+  "labelled_answers": 39,
+  "thresholds": {
+    "parse_accuracy": 0.85,
+    "valid_json": 0.98,
+    "parse_p50_s": 4.0,
+    "choose_acceptable": 0.8,
+    "choose_p50_s": 3.0,
+    "explain_mean": 3.5,
+    "explain_clean": 0.9
+  },
+  "models": {
+    "gemma3:12b": {
+      "valid_json": 1.0,
+      "parse_accuracy": 0.744,
+      "parse_p50_s": 5.93,
+      "choose_acceptable": 0.9,
+      "choose_p50_s": 7.2,
+      "explain_clean": 1.0,
+      "explain_mean": 3.75,
+      "max_prompt_tokens": 503,
+      "passes": {
+        "parse_accuracy": false,
+        "valid_json": true,
+        "parse_p50_s": false,
+        "choose_acceptable": true,
+        "choose_p50_s": false,
+        "explain_mean": true,
+        "explain_clean": true
+      }
+    },
+    "gpt-oss:20b": {
+      "valid_json": 1.0,
+      "parse_accuracy": 0.769,
+      "parse_p50_s": 6.2,
+      "choose_acceptable": 0.9,
+      "choose_p50_s": 5.34,
+      "explain_clean": 1.0,
+      "explain_mean": 3,
+      "max_prompt_tokens": 534,
+      "passes": {
+        "parse_accuracy": false,
+        "valid_json": true,
+        "parse_p50_s": false,
+        "choose_acceptable": true,
+        "choose_p50_s": false,
+        "explain_mean": false,
+        "explain_clean": true
+      }
+    },
+    "hf.co/bartowski/ALLaM-AI_ALLaM-7B-Instruct-preview-GGUF:Q4_K_M": {
+      "valid_json": 1.0,
+      "parse_accuracy": 0.667,
+      "parse_p50_s": 1.47,
+      "choose_acceptable": 0.75,
+      "choose_p50_s": 1.59,
+      "explain_clean": 0.875,
+      "explain_mean": 2.62,
+      "max_prompt_tokens": 553,
+      "passes": {
+        "parse_accuracy": false,
+        "valid_json": true,
+        "parse_p50_s": true,
+        "choose_acceptable": false,
+        "choose_p50_s": true,
+        "explain_mean": false,
+        "explain_clean": false
+      }
+    },
+    "qwen3:8b": {
+      "valid_json": 1.0,
+      "parse_accuracy": 0.821,
+      "parse_p50_s": 1.48,
+      "choose_acceptable": 0.85,
+      "choose_p50_s": 1.61,
+      "explain_clean": 1.0,
+      "explain_mean": 2.75,
+      "max_prompt_tokens": 493,
+      "passes": {
+        "parse_accuracy": false,
+        "valid_json": true,
+        "parse_p50_s": true,
+        "choose_acceptable": true,
+        "choose_p50_s": true,
+        "explain_mean": false,
+        "explain_clean": true
+      }
+    }
+  },
+  "lexicon_parse_accuracy": 0.538
+}

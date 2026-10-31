@@ -1,0 +1,26 @@
+compliance-officer
+Copyright 2026 AlJasser AlGhamdi. Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The engine under src/p2c is vendored from the open-source toolkit "From Ports to Controls"
+(scan-to-controls, https://github.com/AlJasser-AlGhamdi/scan-to-controls), Copyright the authors,
+licensed under Apache-2.0. The copy here is the subset that toolkit's public-release rules allow.
+The live-scan orchestrator, the domain-ownership gate and the field-pilot runner are not part of that
+subset and are not in this repository; the agent reaches them through a typed API on a private worker.
+
+Changes to the vendored engine:
+- src/p2c/mapping/_arabic.py: CLAUSE_AR (Arabic renderings of individual control clauses) is empty in
+  this copy. Domain and subdomain names remain.
+- taxonomy/ecc-2-2024.json and taxonomy/ncnicc-1-2025.json: control titles are replaced by their
+  identifiers and statement prose is empty; structure, identifiers, tiers, Class A/B status and the
+  crosswalk are unchanged. Three catalogue tests that read statement text are skipped.
+  evaluation/kaggle_baseline_data.json (the model-ladder input, which carries control text) is omitted;
+  the ladder's results remain in evaluation/baseline_ladder_results.json.
+- src/p2c/sovereignty/egress_guard.py: socket.sendmsg is guarded only where the platform provides it
+  (Windows has none); two tests skip their sendmsg step there, and the asyncio test skips on Windows.
+- src/p2c/scanning/httpx_probe.py: a cookie's Max-Age is parsed only when it is ASCII digits, so a
+  hostile Set-Cookie cannot raise mid-parse (str.isdigit accepts characters int rejects).
+- The toolkit's figure builders, tier second-coder study and NCA text parsers are not included.
+
+NCA control text is not reproduced anywhere in this repository. Control identifiers refer to the
+National Cybersecurity Authority's ECC-2:2024 and NCNICC-1:2025, available at nca.gov.sa. The fictional
+company in the demo lab ("مؤسسة واحة الرمال للتجارة", wahat-alramal.test) does not exist.

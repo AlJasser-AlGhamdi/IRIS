@@ -1,0 +1,307 @@
+{
+  "confident_threshold": 8,
+  "sets": {
+    "dev": {
+      "lexicon (no model)": {
+        "n": 39,
+        "accuracy": 0.538,
+        "macro_f1": 0.561,
+        "n_confident": 35,
+        "accuracy_confident": 0.6,
+        "errors": [
+          "D07: yes->unknown",
+          "D09: partial->yes",
+          "D10: partial->unknown",
+          "D12: partial->yes",
+          "D13: no->unknown",
+          "D14: yes->unknown",
+          "D16: partial->unknown",
+          "D21: partial->unknown",
+          "D24: partial->unknown",
+          "D26: yes->unknown",
+          "D27: no->unknown",
+          "D30: partial->unknown",
+          "D31: no->partial",
+          "D32: yes->unknown",
+          "D35: partial->unknown",
+          "D36: unknown->partial",
+          "D37: partial->unknown",
+          "D38: unknown->yes"
+        ]
+      },
+      "gemma3:12b": {
+        "n": 39,
+        "accuracy": 0.744,
+        "macro_f1": 0.736,
+        "n_confident": 35,
+        "accuracy_confident": 0.8,
+        "errors": [
+          "D09: partial->yes",
+          "D12: partial->yes",
+          "D13: no->partial",
+          "D27: no->unknown",
+          "D30: partial->yes",
+          "D32: yes->partial",
+          "D33: no->partial",
+          "D36: unknown->partial",
+          "D37: partial->yes",
+          "D38: unknown->partial"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 9.02
+      },
+      "gpt-oss:20b": {
+        "n": 39,
+        "accuracy": 0.769,
+        "macro_f1": 0.762,
+        "n_confident": 35,
+        "accuracy_confident": 0.8,
+        "errors": [
+          "D07: yes->partial",
+          "D09: partial->yes",
+          "D21: partial->yes",
+          "D27: no->unknown",
+          "D32: yes->partial",
+          "D35: partial->yes",
+          "D36: unknown->no",
+          "D37: partial->yes",
+          "D38: unknown->yes"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 6.57
+      },
+      "hf.co/bartowski/ALLaM-AI_ALLaM-7B-Instruct-preview-GGUF:Q4_K_M": {
+        "n": 39,
+        "accuracy": 0.667,
+        "macro_f1": 0.664,
+        "n_confident": 35,
+        "accuracy_confident": 0.714,
+        "errors": [
+          "D01: yes->partial",
+          "D09: partial->yes",
+          "D12: partial->yes",
+          "D24: partial->unknown",
+          "D25: yes->partial",
+          "D27: no->unknown",
+          "D30: partial->yes",
+          "D31: no->unknown",
+          "D32: yes->partial",
+          "D33: no->partial",
+          "D36: unknown->partial",
+          "D37: partial->yes",
+          "D38: unknown->partial"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 1.33
+      },
+      "qwen3:8b": {
+        "n": 39,
+        "accuracy": 0.821,
+        "macro_f1": 0.83,
+        "n_confident": 35,
+        "accuracy_confident": 0.857,
+        "errors": [
+          "D09: partial->yes",
+          "D21: partial->yes",
+          "D30: partial->yes",
+          "D32: yes->partial",
+          "D33: no->unknown",
+          "D36: unknown->partial",
+          "D37: partial->yes"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 1.57
+      }
+    },
+    "test": {
+      "lexicon (no model)": {
+        "n": 40,
+        "accuracy": 0.45,
+        "macro_f1": 0.439,
+        "n_confident": 33,
+        "accuracy_confident": 0.545,
+        "errors": [
+          "T02: no->partial",
+          "T03: yes->unknown",
+          "T04: no->unknown",
+          "T05: yes->partial",
+          "T07: partial->yes",
+          "T08: no->unknown",
+          "T10: partial->unknown",
+          "T11: partial->unknown",
+          "T12: yes->unknown",
+          "T13: partial->yes",
+          "T16: no->unknown",
+          "T17: partial->unknown",
+          "T21: no->partial",
+          "T23: no->unknown",
+          "T24: yes->unknown",
+          "T25: no->partial",
+          "T26: partial->yes",
+          "T30: yes->unknown",
+          "T33: partial->unknown",
+          "T35: partial->unknown",
+          "T38: partial->unknown",
+          "T39: yes->no"
+        ]
+      },
+      "gemma3:12b": {
+        "n": 40,
+        "accuracy": 0.7,
+        "macro_f1": 0.732,
+        "n_confident": 33,
+        "accuracy_confident": 0.727,
+        "errors": [
+          "T02: no->partial",
+          "T04: no->partial",
+          "T05: yes->partial",
+          "T06: unknown->partial",
+          "T11: partial->yes",
+          "T12: yes->partial",
+          "T13: partial->no",
+          "T21: no->partial",
+          "T22: yes->partial",
+          "T25: no->partial",
+          "T30: yes->partial",
+          "T33: partial->yes"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 7.21
+      },
+      "gpt-oss:20b": {
+        "n": 40,
+        "accuracy": 0.8,
+        "macro_f1": 0.829,
+        "n_confident": 33,
+        "accuracy_confident": 0.909,
+        "errors": [
+          "T11: partial->yes",
+          "T13: partial->no",
+          "T21: no->partial",
+          "T25: no->partial",
+          "T26: partial->yes",
+          "T33: partial->yes",
+          "T35: partial->yes",
+          "T38: partial->yes"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 6.9
+      },
+      "hf.co/bartowski/ALLaM-AI_ALLaM-7B-Instruct-preview-GGUF:Q4_K_M": {
+        "n": 40,
+        "accuracy": 0.7,
+        "macro_f1": 0.706,
+        "n_confident": 33,
+        "accuracy_confident": 0.788,
+        "errors": [
+          "T01: yes->partial",
+          "T02: no->partial",
+          "T04: no->partial",
+          "T05: yes->partial",
+          "T07: partial->yes",
+          "T11: partial->yes",
+          "T13: partial->no",
+          "T16: no->unknown",
+          "T21: no->partial",
+          "T25: no->partial",
+          "T33: partial->yes",
+          "T38: partial->unknown"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 1.31
+      },
+      "qwen3:8b": {
+        "n": 40,
+        "accuracy": 0.6,
+        "macro_f1": 0.633,
+        "n_confident": 33,
+        "accuracy_confident": 0.727,
+        "errors": [
+          "T02: no->partial",
+          "T04: no->partial",
+          "T05: yes->partial",
+          "T07: partial->yes",
+          "T11: partial->yes",
+          "T12: yes->partial",
+          "T13: partial->no",
+          "T21: no->partial",
+          "T22: yes->partial",
+          "T25: no->partial",
+          "T26: partial->yes",
+          "T27: partial->no",
+          "T33: partial->yes",
+          "T35: partial->unknown",
+          "T38: partial->unknown",
+          "T39: yes->no"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 1.59
+      }
+    },
+    "ood": {
+      "lexicon (no model)": {
+        "n": 20,
+        "accuracy": 0.8,
+        "macro_f1": 0.782,
+        "n_confident": 20,
+        "accuracy_confident": 0.8,
+        "errors": [
+          "O02: no->unknown",
+          "O06: no->yes",
+          "O12: partial->unknown",
+          "O15: no->yes"
+        ]
+      },
+      "gemma3:12b": {
+        "n": 20,
+        "accuracy": 0.9,
+        "macro_f1": 0.903,
+        "n_confident": 20,
+        "accuracy_confident": 0.9,
+        "errors": [
+          "O06: no->partial",
+          "O14: yes->partial"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 8.42
+      },
+      "gpt-oss:20b": {
+        "n": 20,
+        "accuracy": 1.0,
+        "macro_f1": 1.0,
+        "n_confident": 20,
+        "accuracy_confident": 1.0,
+        "errors": [],
+        "valid_json": 1.0,
+        "p50_s": 7.04
+      },
+      "hf.co/bartowski/ALLaM-AI_ALLaM-7B-Instruct-preview-GGUF:Q4_K_M": {
+        "n": 20,
+        "accuracy": 0.8,
+        "macro_f1": 0.804,
+        "n_confident": 20,
+        "accuracy_confident": 0.8,
+        "errors": [
+          "O04: unknown->partial",
+          "O06: no->partial",
+          "O12: partial->unknown",
+          "O15: no->partial"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 3.72
+      },
+      "qwen3:8b": {
+        "n": 20,
+        "accuracy": 0.95,
+        "macro_f1": 0.949,
+        "n_confident": 20,
+        "accuracy_confident": 0.95,
+        "errors": [
+          "O12: partial->unknown"
+        ],
+        "valid_json": 1.0,
+        "p50_s": 1.74
+      }
+    }
+  }
+}

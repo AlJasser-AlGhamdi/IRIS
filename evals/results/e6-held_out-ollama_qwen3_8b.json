@@ -1,0 +1,283 @@
+[
+ {
+  "estate": "seed-9101",
+  "completed": true,
+  "defects": [
+   "spf_missing",
+   "dmarc_none",
+   "lpd_515"
+  ],
+  "planted_detectors": [
+   "dmarc_missing_or_none",
+   "exposed_printer_service",
+   "spf_missing"
+  ],
+  "found": [
+   "dmarc_missing_or_none",
+   "exposed_printer_service",
+   "spf_missing"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "publish_spf",
+   "set_dmarc_reject",
+   "close_printer_ports"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_printer_ports",
+   "publish_spf",
+   "set_dmarc_reject"
+  ],
+  "remaining_defects": [],
+  "escalations": [],
+  "seconds": 98.6,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02"
+  ]
+ },
+ {
+  "estate": "seed-9102",
+  "completed": true,
+  "defects": [
+   "dmarc_none",
+   "ipp_631",
+   "lpd_515",
+   "ssh_22",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "dmarc_missing_or_none",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "found": [
+   "dmarc_missing_or_none",
+   "exposed_management_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "set_dmarc_reject",
+   "close_printer_ports",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_printer_ports",
+   "enable_https_redirect",
+   "set_dmarc_reject"
+  ],
+  "remaining_defects": [
+   "ssh_22"
+  ],
+  "escalations": [
+   "risky_fix:exposed_management_port"
+  ],
+  "seconds": 105.2,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02",
+   "Q04"
+  ]
+ },
+ {
+  "estate": "seed-9103",
+  "completed": true,
+  "defects": [
+   "spf_missing",
+   "mysql_3306",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "no_https_redirect",
+   "spf_missing"
+  ],
+  "found": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "no_https_redirect",
+   "spf_missing"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "publish_spf",
+   "close_db_port",
+   "close_cache_port",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_db_port",
+   "enable_https_redirect",
+   "publish_spf"
+  ],
+  "remaining_defects": [],
+  "escalations": [],
+  "seconds": 99.9,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02",
+   "Q04"
+  ]
+ },
+ {
+  "estate": "seed-9104",
+  "completed": true,
+  "defects": [
+   "ssh_22",
+   "ftp_21",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "exposed_management_port",
+   "high_risk_port_open",
+   "no_https_redirect"
+  ],
+  "found": [
+   "exposed_management_port",
+   "high_risk_port_open",
+   "no_https_redirect"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "close_ftp_port",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_ftp_port",
+   "enable_https_redirect"
+  ],
+  "remaining_defects": [
+   "ssh_22"
+  ],
+  "escalations": [
+   "risky_fix:exposed_management_port"
+  ],
+  "seconds": 95.9,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q02",
+   "Q04"
+  ]
+ },
+ {
+  "estate": "seed-9105",
+  "completed": true,
+  "defects": [
+   "dmarc_missing",
+   "mysql_3306",
+   "ipp_631",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "dmarc_missing_or_none",
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "found": [
+   "dmarc_missing_or_none",
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "set_dmarc_reject",
+   "close_db_port",
+   "close_cache_port",
+   "close_printer_ports",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_db_port",
+   "close_printer_ports",
+   "enable_https_redirect",
+   "set_dmarc_reject"
+  ],
+  "remaining_defects": [],
+  "escalations": [],
+  "seconds": 116.9,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q01",
+   "Q02",
+   "Q04"
+  ]
+ },
+ {
+  "estate": "seed-9106",
+  "completed": true,
+  "defects": [
+   "mysql_3306",
+   "redis_6379",
+   "lpd_515",
+   "no_redirect"
+  ],
+  "planted_detectors": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "found": [
+   "exposed_database_port",
+   "exposed_internal_port",
+   "exposed_printer_service",
+   "no_https_redirect"
+  ],
+  "missed": [],
+  "unexpected": [],
+  "fixes_verified": [
+   "close_db_port",
+   "close_cache_port",
+   "close_printer_ports",
+   "enable_https_redirect"
+  ],
+  "false_fixed": [],
+  "fixes_failed": [],
+  "fixable": [
+   "close_cache_port",
+   "close_db_port",
+   "close_printer_ports",
+   "enable_https_redirect"
+  ],
+  "remaining_defects": [],
+  "escalations": [],
+  "seconds": 113.5,
+  "human_touches": 26,
+  "questions": 14,
+  "contradiction_qids": [
+   "Q02",
+   "Q04"
+  ]
+ }
+]

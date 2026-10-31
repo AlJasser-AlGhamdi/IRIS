@@ -1,0 +1,23 @@
+id: atlas-missing-csp
+info:
+  name: Missing Content-Security-Policy header
+  author: atlas
+  severity: medium
+  description: The endpoint responds 200 without a Content-Security-Policy header.
+  tags: atlas,headers,misconfig,ecc
+  metadata:
+    atlas-check-id: missing_csp
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: header
+        words:
+          - "Content-Security-Policy"
+        negative: true

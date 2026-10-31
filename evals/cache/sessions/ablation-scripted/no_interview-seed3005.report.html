@@ -1,0 +1,27 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<title>تقرير الامتثال: منشأة تجريبية</title>
+<style>body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;max-width:900px;margin:32px auto;padding:0 16px;
+color:#0F1720;background:#fff}h1{font-size:22px}h2{font-size:16px;margin-top:28px;border-bottom:2px solid #0E7C66;
+padding-bottom:4px}table{width:100%;border-collapse:collapse;font-size:13px}td{border-bottom:1px solid #E2DED5;
+padding:6px 4px;vertical-align:top}.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi div{
+background:#F6F4EF;border-radius:10px;padding:10px}.kpi b{display:block;font-size:22px}.muted{color:#5B6672;
+font-size:12px}details{background:#F6F4EF;border-radius:10px;padding:10px 14px;margin:8px 0}summary{cursor:pointer;font-weight:600}h4{font-size:14px;margin:14px 0 4px}.blank{color:#8A6D1F}bdi{font-family:'IBM Plex Mono',monospace}</style></head><body>
+<h1>تقرير تقييم الامتثال للأمن السيبراني</h1>
+<p>منشأة تجريبية · <bdi dir=ltr>sme000-co.com</bdi> · النطاق: class_b · 2026-10-30 19:53 UTC</p>
+<div class="kpi"><div>لم تُرصد مخالفة من الخارج<b>91%</b>
+<span class="muted">قبل المعالجة: 73%</span></div>
+<div>الموثّق<b>5%</b><span class="muted">بأدلة أو إقرارات، ولا يُدمج مع الأول</span></div>
+<div>تعديلات متحقق منها<b>3</b></div>
+<div>تناقضات<b>0</b></div></div>
+<p class="muted">الفحص الخارجي يختبر ولا يثبت: غياب المخالفة لا يعني الامتثال. الإقرارات مسجلة كإقرارات، لا كأدلة.
+هذا التقرير لا يتضمن نص ضوابط الهيئة الوطنية للأمن السيبراني؛ المعرّفات تشير إلى إصداراتها الرسمية.</p>
+<h2>حالة الضوابط (204 صفاً)</h2><table><tr><td>يحتاج إجابة</td><td>110</td></tr><tr><td>غير معروف</td><td>76</td></tr><tr><td>لم تُرصد مخالفة من الخارج</td><td>16</td></tr><tr><td>مخالفة مرصودة من الخارج</td><td>2</td></tr></table>
+<h2>ما رصده الفحص الخارجي</h2><table><tr><td>بيئة تطوير مكشوفة</td><td><bdi dir=ltr>exposed_dev_environment</bdi></td><td><bdi dir=ltr>dev.sme000-co.com</bdi></td><td>—</td></tr><tr><td>نقل منطقة DNS مفتوح للجميع</td><td><bdi dir=ltr>dns_zone_transfer_open</bdi></td><td><bdi dir=ltr>sme000-co.com</bdi></td><td>2-5-3-7</td></tr></table>
+<h2>إجابات المالك</h2><table><tr><td>السؤال</td><td>النص</td><td>الإجابة</td><td>دليل</td><td>ضوابط</td></tr></table>
+<h2>تناقضات بين الإجابات والفحص</h2><table><tr><td>لا يوجد</td></tr></table>
+<h2>المعالجة</h2><table><tr><td>close_db_port</td><td>✓ تحقق بفحص جديد</td></tr><tr><td>close_cache_port</td><td>✓ تحقق بفحص جديد</td></tr><tr><td>close_ftp_port</td><td>✓ تحقق بفحص جديد</td></tr></table>
+<h2>أحيل إلى إنسان</h2><table><tr><td>لا يوجد</td></tr></table>
+<h2>خطة العمل للأيام الـ٩٠ القادمة</h2><p class="muted">مرتبة: ما يظهر للإنترنت أولاً، ثم الفجوات الإلزامية، ثم الباقي. <a href="no_interview-seed3005.calendar.ics">أضيفوا المهام الدورية إلى تقويمكم</a></p><table><tr><td>خلال</td><td>المهمة</td><td>النوع</td><td>صفوف إلزامية</td></tr><tr><td>30 يوماً</td><td>نقل منطقة DNS مفتوح للجميع</td><td>تذكرة للدعم التقني</td><td>—</td></tr><tr><td>30 يوماً</td><td>بيئة تطوير مكشوفة</td><td>تذكرة للدعم التقني</td><td>—</td></tr></table><h2>تذاكر جاهزة للدعم التقني</h2><p class="muted">ما لا نغيّره بأنفسنا: يحتاج من يدير الخادم، أو قد يقطع وصولكم إن غُيّر تلقائياً.</p><details open><summary>نقل منطقة DNS مفتوح للجميع · <bdi dir=ltr>dns_zone_transfer_open</bdi></summary><p>رصده الفحص، وإصلاحه يحتاج من يدير الخادم.</p><p class="muted">المواقع: <bdi dir=ltr>sme000-co.com</bdi></p><ol><li>اقصروا نقل منطقة DNS على الخوادم الثانوية المعروفة فقط.</li></ol><p class="muted">بعد التنفيذ نعيد الفحص في جولة المراقبة التالية ونغلق التذكرة إن تحققنا.</p></details><details open><summary>بيئة تطوير مكشوفة · <bdi dir=ltr>exposed_dev_environment</bdi></summary><p>رصده الفحص، وإصلاحه يحتاج من يدير الخادم.</p><p class="muted">المواقع: <bdi dir=ltr>dev.sme000-co.com</bdi></p><ol><li>أوقفوا بيئة التطوير أو احموها بكلمة مرور وقيّدوها بعناوين محددة.</li><li>تأكدوا أنها لا تحمل بيانات حقيقية.</li></ol><p class="muted">بعد التنفيذ نعيد الفحص في جولة المراقبة التالية ونغلق التذكرة إن تحققنا.</p></details><h2>سجل التدقيق</h2><p class="muted">آخر بصمة في سلسلة الأحداث: <bdi dir=ltr>8abc5f690d6fc3b082048c6a1d0f4a44f58c504ce39debcc01e5d00b55821190</bdi> ·
+تحقق: <bdi dir=ltr>officer audit-verify</bdi></p>
+<p class="muted">{&#x27;rows&#x27;: 204, &#x27;tier1&#x27;: 18, &#x27;tier2&#x27;: 127, &#x27;tier3&#x27;: 59, &#x27;class_b&#x27;: 120, &#x27;class_b_mandatory&#x27;: 54}</p>
+</body></html>

@@ -1,0 +1,28 @@
+# Every display string, colour and font lives here. A rename is one edit to this file.
+name_en: "Iris"
+name_ar: "آيريس"
+tagline_en: "Sees it. Fixes it. Proves it."
+tagline_ar: "يرى. يُصلح. يُثبت."
+challenge: "Challenge 3: Autonomous Enterprise"
+company_ar: "مؤسسة واحة الرمال للتجارة"
+company_en: "Wahat Al-Ramal Trading (fictional)"
+company_domain: "wahat-alramal.test"
+colors:
+  ink: "#E9EDF7"
+  paper: "#05070D"
+  sand: "#18213A"
+  panel: "#0B1122"
+  accent: "#5B6CFF"
+  accent_glow: "#A5B4FF"
+  iris_violet: "#B07CFF"
+  violation: "#F2545B"
+  clean: "#2FBF71"
+  contradicted: "#F5B83D"
+  needs_answer: "#4DA3FF"
+  unknown: "#222B45"
+fonts:
+  arabic: "IBM Plex Sans Arabic"
+  latin: "IBM Plex Sans"
+  mono: "IBM Plex Mono"
+repo_url: ""   # filled at publish time
+video_url: ""

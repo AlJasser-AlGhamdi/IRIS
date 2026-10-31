@@ -1,0 +1,9 @@
+# lab-dns: authoritative for wahat-alramal.test only. No transfer block, so a zone transfer is refused;
+# no forward and no other server block, so a query outside the zone is refused and nothing leaves the
+# lab. The worker rewrites the zone and bumps its SOA serial; the file plugin reloads it within 2 s.
+wahat-alramal.test:53 {
+    file /zones/db.wahat-alramal.test {
+        reload 2s
+    }
+    errors
+}
